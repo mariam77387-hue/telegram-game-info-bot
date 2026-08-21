@@ -16,6 +16,7 @@ from telegram.ext import (
 
 
 TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = os.getenv("ADMIN_ID")
 REQUESTS_FILE = Path(os.getenv("GAME_REQUESTS_FILE", "game_requests.json"))
 
 
@@ -205,13 +206,19 @@ def normalize_game_name(value: str) -> str:
 
 def find_game_id(game_name: str) -> str | None:
     normalized = normalize_game_name(game_name)
+
     if normalized in GAME_ALIASES:
         return GAME_ALIASES[normalized]
 
     for game_id, game in games.items():
         names = [game["name"], game_id, *game.get("aliases", [])]
-        if normalized in {normalize_game_name(name) for name in names}:
+
+        if normalized in {
+            normalize_game_name(name)
+            for name in names
+        }:
             return game_id
+
     return None
 
 
@@ -222,6 +229,7 @@ def get_language(context: ContextTypes.DEFAULT_TYPE) -> str:
 def menu_text(language: str) -> str:
     if language == "ar":
         return "🎮 اختر اللعبة التي تريد معرفة معلومات عنها:"
+
     return "🎮 Choose a game to get information about:"
 
 
@@ -235,11 +243,22 @@ def get_game_buttons(language: str) -> InlineKeyboardMarkup:
         ]
         for game_id, game in games.items()
     ]
+
     if language == "ar":
         keyboard.extend(
             [
-                [InlineKeyboardButton("🔎 بحث عن لعبة", callback_data="search_game")],
-                [InlineKeyboardButton("➕ طلب لعبة", callback_data="request_game")],
+                [
+                    InlineKeyboardButton(
+                        "🔎 بحث عن لعبة",
+                        callback_data="search_game",
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        "➕ طلب لعبة",
+                        callback_data="request_game",
+                    )
+                ],
             ]
         )
     else:
@@ -247,29 +266,41 @@ def get_game_buttons(language: str) -> InlineKeyboardMarkup:
             [
                 [
                     InlineKeyboardButton(
-                        "🔎 Search for a Game", callback_data="search_game"
+                        "🔎 Search for a Game",
+                        callback_data="search_game",
                     )
                 ],
                 [
                     InlineKeyboardButton(
-                        "➕ Request a Game", callback_data="request_game"
+                        "➕ Request a Game",
+                        callback_data="request_game",
                     )
                 ],
             ]
         )
+
     return InlineKeyboardMarkup(keyboard)
 
 
 def back_markup(language: str) -> InlineKeyboardMarkup:
     label = "🔙 رجوع" if language == "ar" else "🔙 Back"
+
     return InlineKeyboardMarkup(
-        [[InlineKeyboardButton(label, callback_data="back")]]
+        [
+            [
+                InlineKeyboardButton(
+                    label,
+                    callback_data="back",
+                )
+            ]
+        ]
     )
 
 
 def game_info_text(game_id: str, language: str) -> str:
     game = games[game_id]
     info = game[language]
+
     if language == "ar":
         return (
             f"{game['emoji']} *{game['name']}*\n\n"
@@ -279,6 +310,7 @@ def game_info_text(game_id: str, language: str) -> str:
             f"🎯 *النوع:*\n{info['genre']}\n\n"
             f"💻 *المنصات:*\n{info['platforms']}"
         )
+
     return (
         f"{game['emoji']} *{game['name']}*\n\n"
         f"📖 *Description:*\n{info['description']}\n\n"
@@ -289,18 +321,33 @@ def game_info_text(game_id: str, language: str) -> str:
     )
 
 
+# =========================
+# Game requests
+# =========================
+
 def load_requests() -> list[dict]:
     try:
         with REQUESTS_FILE.open("r", encoding="utf-8") as file:
             data = json.load(file)
+
         return data if isinstance(data, list) else []
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
+
+    except (
+        FileNotFoundError,
+        json.JSONDecodeError,
+        OSError,
+    ):
         return []
 
 
 def save_requests(requests: list[dict]) -> None:
-    REQUESTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    REQUESTS_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
     temporary_path = None
+
     try:
         with tempfile.NamedTemporaryFile(
             "w",
@@ -309,32 +356,54 @@ def save_requests(requests: list[dict]) -> None:
             prefix=f".{REQUESTS_FILE.name}.",
             delete=False,
         ) as file:
-            json.dump(requests, file, ensure_ascii=False, indent=2)
+
+            json.dump(
+                requests,
+                file,
+                ensure_ascii=False,
+                indent=2,
+            )
+
             file.write("\n")
             temporary_path = Path(file.name)
+
         temporary_path.replace(REQUESTS_FILE)
+
     finally:
         if temporary_path and temporary_path.exists():
             temporary_path.unlink()
 
 
 def register_game_request(
-    game_name: str, update: Update, language: str
+    game_name: str,
+    update: Update,
+    language: str,
 ) -> tuple[bool, str]:
-    game_name = " ".join(game_name.strip().split())
+
+    game_name = " ".join(
+        game_name.strip().split()
+    )
+
     if find_game_id(game_name):
+
         if language == "ar":
-            return False, "✅ هذه اللعبة متوفرة بالفعل في البوت."
-        return False, "✅ This game is already available in the bot."
+            return (
+                False,
+                "✅ هذه اللعبة متوفرة بالفعل في البوت.",
+            )
+
+        return (
+            False,
+            "✅ This game is already available in the bot.",
+        )
 
     requests = load_requests()
+
     normalized = normalize_game_name(game_name)
-    if any(item.get("normalized_name") == normalized for item in requests):
-        if language == "ar":
-            return False, f'✅ تم استلام طلب "{game_name}" مسبقًا.'
-        return False, f'✅ A request for "{game_name}" has already been received.'
 
     user = update.effective_user
+
+    # كل طلب من المستخدم يسجل كطلب مستقل
     requests.append(
         {
             "game_name": game_name,
@@ -342,43 +411,203 @@ def register_game_request(
             "user_id": user.id if user else None,
             "username": user.username if user else None,
             "language": language,
-            "requested_at": datetime.now(timezone.utc).isoformat(),
+            "requested_at": datetime.now(
+                timezone.utc
+            ).isoformat(),
         }
     )
+
     save_requests(requests)
+
     if language == "ar":
-        return True, f'✅ تم استلام طلبك بإضافة "{game_name}".\nشكرًا على اقتراحك! ❤️'
-    return True, f'✅ Your request for "{game_name}" has been received.\nThank you for your suggestion! ❤️'
+        return (
+            True,
+            f'✅ تم استلام طلبك بإضافة "{game_name}".\n'
+            "شكرًا على اقتراحك! ❤️",
+        )
+
+    return (
+        True,
+        f'✅ Your request for "{game_name}" has been received.\n'
+        "Thank you for your suggestion! ❤️",
+    )
 
 
-async def send_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+# =========================
+# Admin requests command
+# =========================
+
+async def requests_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+    user = update.effective_user
+
+    if not user:
+        return
+
+    admin_id = os.getenv("ADMIN_ID")
+
+    if not admin_id or str(user.id) != str(admin_id).strip():
+        await update.message.reply_text(
+            "❌ You are not authorized to use this command."
+        )
+        return
+
+    requests = load_requests()
+
+    if not requests:
+        await update.message.reply_text(
+            "📋 لا توجد طلبات ألعاب حتى الآن."
+        )
+        return
+
+    grouped = {}
+
+    for item in requests:
+        normalized_name = item.get(
+            "normalized_name",
+            "",
+        )
+
+        game_name = item.get(
+            "game_name",
+            "Unknown",
+        )
+
+        if not normalized_name:
+            normalized_name = normalize_game_name(
+                game_name
+            )
+
+        if normalized_name not in grouped:
+            grouped[normalized_name] = {
+                "name": game_name,
+                "count": 0,
+            }
+
+        grouped[normalized_name]["count"] += 1
+
+    sorted_requests = sorted(
+        grouped.values(),
+        key=lambda item: item["count"],
+        reverse=True,
+    )
+
+    lines = [
+        "📋 طلبات الألعاب",
+        "",
+    ]
+
+    total = 0
+
+    for index, item in enumerate(
+        sorted_requests,
+        start=1,
+    ):
+        count = item["count"]
+        total += count
+
+        if count == 1:
+            request_word = "طلب"
+        elif count == 2:
+            request_word = "طلبان"
+        else:
+            request_word = "طلبات"
+
+        lines.append(
+            f"{index}. 🎮 {item['name']} — "
+            f"{count} {request_word}"
+        )
+
+    lines.extend(
+        [
+            "",
+            f"📊 إجمالي الطلبات: {total}",
+        ]
+    )
+
+    # Telegram message limit protection
+    message = "\n".join(lines)
+
+    if len(message) <= 4000:
+        await update.message.reply_text(message)
+        return
+
+    # إرسال النتائج على أكثر من رسالة إذا كانت كثيرة
+    current = "📋 طلبات الألعاب\n\n"
+
+    for line in lines[2:]:
+        if len(current) + len(line) + 1 > 3900:
+            await update.message.reply_text(current)
+            current = ""
+
+        current += line + "\n"
+
+    if current.strip():
+        await update.message.reply_text(current)
+
+
+# =========================
+# Menu
+# =========================
+
+async def send_menu(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+
     language = get_language(context)
-    context.user_data.pop("input_mode", None)
-    context.user_data.pop("pending_game_request", None)
+
+    context.user_data.pop(
+        "input_mode",
+        None,
+    )
+
+    context.user_data.pop(
+        "pending_game_request",
+        None,
+    )
+
     if update.callback_query:
         await update.callback_query.edit_message_text(
-            menu_text(language), reply_markup=get_game_buttons(language)
+            menu_text(language),
+            reply_markup=get_game_buttons(language),
         )
+
     else:
         await update.message.reply_text(
-            menu_text(language), reply_markup=get_game_buttons(language)
+            menu_text(language),
+            reply_markup=get_game_buttons(language),
         )
 
 
 # =========================
-# Start and language selection
+# Start and language
 # =========================
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+
     context.user_data.clear()
+
     keyboard = InlineKeyboardMarkup(
         [
             [
-                InlineKeyboardButton("🇸🇦 العربية", callback_data="language_ar"),
-                InlineKeyboardButton("🇺🇸 English", callback_data="language_en"),
+                InlineKeyboardButton(
+                    "🇸🇦 العربية",
+                    callback_data="language_ar",
+                ),
+                InlineKeyboardButton(
+                    "🇺🇸 English",
+                    callback_data="language_en",
+                ),
             ]
         ]
     )
+
     await update.message.reply_text(
         "👋 أهلاً بك في بوت معلومات الألعاب!\n\n"
         "اختر اللغة / Choose your language:",
@@ -386,46 +615,98 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-async def choose_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def choose_language(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+
     query = update.callback_query
+
     await query.answer()
-    context.user_data["language"] = query.data.replace("language_", "")
-    await send_menu(update, context)
+
+    context.user_data["language"] = (
+        query.data.replace(
+            "language_",
+            "",
+        )
+    )
+
+    await send_menu(
+        update,
+        context,
+    )
 
 
 # =========================
 # Game display
 # =========================
 
-async def show_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def show_game(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+
     query = update.callback_query
+
     await query.answer()
+
     game_id = query.data
+
     if game_id not in games:
-        await query.edit_message_text("❌ اللعبة غير موجودة.")
+        await query.edit_message_text(
+            "❌ اللعبة غير موجودة."
+        )
         return
 
     language = get_language(context)
-    context.user_data.pop("input_mode", None)
+
+    context.user_data.pop(
+        "input_mode",
+        None,
+    )
+
     await query.edit_message_text(
-        game_info_text(game_id, language),
+        game_info_text(
+            game_id,
+            language,
+        ),
         parse_mode="Markdown",
         reply_markup=back_markup(language),
     )
 
 
-async def show_searched_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def show_searched_game(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+
     query = update.callback_query
+
     await query.answer()
-    game_id = context.user_data.get("searched_game_id")
+
+    game_id = context.user_data.get(
+        "searched_game_id"
+    )
+
     if game_id not in games:
-        await send_menu(update, context)
+        await send_menu(
+            update,
+            context,
+        )
         return
 
     language = get_language(context)
-    context.user_data.pop("input_mode", None)
+
+    context.user_data.pop(
+        "input_mode",
+        None,
+    )
+
     await query.edit_message_text(
-        game_info_text(game_id, language),
+        game_info_text(
+            game_id,
+            language,
+        ),
         parse_mode="Markdown",
         reply_markup=back_markup(language),
     )
@@ -435,13 +716,18 @@ async def show_searched_game(update: Update, context: ContextTypes.DEFAULT_TYPE)
 # Search and request flows
 # =========================
 
-def prompt_text(language: str, mode: str) -> str:
+def prompt_text(
+    language: str,
+    mode: str,
+) -> str:
+
     if mode == "search":
         return (
             "🔎 اكتب اسم اللعبة التي تريد البحث عنها:"
             if language == "ar"
             else "🔎 Enter the name of the game you want to search for:"
         )
+
     return (
         "🎮 اكتب اسم اللعبة التي تريد إضافتها:"
         if language == "ar"
@@ -449,133 +735,323 @@ def prompt_text(language: str, mode: str) -> str:
     )
 
 
-async def begin_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def begin_search(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+
     query = update.callback_query
+
     await query.answer()
+
     language = get_language(context)
+
     context.user_data["input_mode"] = "search"
+
     await query.edit_message_text(
-        prompt_text(language, "search"), reply_markup=back_markup(language)
+        prompt_text(
+            language,
+            "search",
+        ),
+        reply_markup=back_markup(language),
     )
 
 
-async def begin_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def begin_request(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+
     query = update.callback_query
+
     await query.answer()
+
     language = get_language(context)
+
     context.user_data["input_mode"] = "request"
+
     await query.edit_message_text(
-        prompt_text(language, "request"), reply_markup=back_markup(language)
+        prompt_text(
+            language,
+            "request",
+        ),
+        reply_markup=back_markup(language),
     )
 
 
 async def request_searched_game(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
 ):
+
     query = update.callback_query
+
     await query.answer()
+
     language = get_language(context)
-    game_name = context.user_data.pop("pending_game_request", "")
+
+    game_name = context.user_data.pop(
+        "pending_game_request",
+        "",
+    )
+
     if not game_name:
-        await send_menu(update, context)
+        await send_menu(
+            update,
+            context,
+        )
         return
 
-    _, message = register_game_request(game_name, update, language)
-    context.user_data.pop("input_mode", None)
-    await query.edit_message_text(message, reply_markup=back_markup(language))
+    _, message = register_game_request(
+        game_name,
+        update,
+        language,
+    )
+
+    context.user_data.pop(
+        "input_mode",
+        None,
+    )
+
+    await query.edit_message_text(
+        message,
+        reply_markup=back_markup(language),
+    )
 
 
-async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    mode = context.user_data.get("input_mode")
-    if mode not in {"search", "request"} or not update.message:
+async def handle_text(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+
+    mode = context.user_data.get(
+        "input_mode"
+    )
+
+    if (
+        mode not in {"search", "request"}
+        or not update.message
+    ):
         return
 
     game_name = update.message.text.strip()
+
     language = get_language(context)
-    context.user_data.pop("input_mode", None)
+
+    context.user_data.pop(
+        "input_mode",
+        None,
+    )
+
     if not game_name:
         await update.message.reply_text(
-            prompt_text(language, mode), reply_markup=back_markup(language)
+            prompt_text(
+                language,
+                mode,
+            ),
+            reply_markup=back_markup(language),
         )
+
         context.user_data["input_mode"] = mode
         return
 
     if mode == "search":
+
         game_id = find_game_id(game_name)
+
         if game_id:
-            context.user_data["searched_game_id"] = game_id
+
+            context.user_data[
+                "searched_game_id"
+            ] = game_id
+
             await update.message.reply_text(
-                game_info_text(game_id, language),
+                game_info_text(
+                    game_id,
+                    language,
+                ),
                 parse_mode="Markdown",
                 reply_markup=back_markup(language),
             )
+
             return
 
-        context.user_data["pending_game_request"] = game_name
+        context.user_data[
+            "pending_game_request"
+        ] = game_name
+
         if language == "ar":
-            text = f'❌ اللعبة "{game_name}" غير موجودة حاليًا.'
-            button = f"➕ طلب إضافة {game_name}"
+            text = (
+                f'❌ اللعبة "{game_name}" '
+                "غير موجودة حاليًا."
+            )
+
+            button = (
+                f"➕ طلب إضافة {game_name}"
+            )
+
         else:
-            text = f'❌ "{game_name}" isn\'t available yet.'
-            button = f"➕ Request {game_name}"
+            text = (
+                f'❌ "{game_name}" '
+                "isn't available yet."
+            )
+
+            button = (
+                f"➕ Request {game_name}"
+            )
+
         await update.message.reply_text(
             text,
             reply_markup=InlineKeyboardMarkup(
                 [
-                    [InlineKeyboardButton(button[:60], callback_data="request_searched_game")],
-                    [InlineKeyboardButton(
-                        "🔙 رجوع" if language == "ar" else "🔙 Back",
-                        callback_data="back",
-                    )],
+                    [
+                        InlineKeyboardButton(
+                            button[:60],
+                            callback_data=(
+                                "request_searched_game"
+                            ),
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            "🔙 رجوع"
+                            if language == "ar"
+                            else "🔙 Back",
+                            callback_data="back",
+                        )
+                    ],
                 ]
             ),
         )
+
         return
 
-    _, message = register_game_request(game_name, update, language)
-    await update.message.reply_text(message, reply_markup=back_markup(language))
+    _, message = register_game_request(
+        game_name,
+        update,
+        language,
+    )
+
+    await update.message.reply_text(
+        message,
+        reply_markup=back_markup(language),
+    )
 
 
 # =========================
-# Back and application setup
+# Back
 # =========================
 
-async def back(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def back(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+
     query = update.callback_query
-    await query.answer()
-    await send_menu(update, context)
 
+    await query.answer()
+
+    await send_menu(
+        update,
+        context,
+    )
+
+
+# =========================
+# Application setup
+# =========================
 
 def main():
+
     if not TOKEN:
-        print("❌ BOT_TOKEN غير موجود في Secrets")
+        print(
+            "❌ BOT_TOKEN غير موجود في Secrets"
+        )
         return
 
-    app = Application.builder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(
-        CallbackQueryHandler(choose_language, pattern=r"^language_(ar|en)$")
+    app = (
+        Application.builder()
+        .token(TOKEN)
+        .build()
     )
+
+    app.add_handler(
+        CommandHandler(
+            "start",
+            start,
+        )
+    )
+
+    app.add_handler(
+        CommandHandler(
+            "requests",
+            requests_command,
+        )
+    )
+
+    app.add_handler(
+        CallbackQueryHandler(
+            choose_language,
+            pattern=r"^language_(ar|en)$",
+        )
+    )
+
     app.add_handler(
         CallbackQueryHandler(
             show_game,
-            pattern=r"^(minecraft|roblox|fortnite|valorant|rocketleague|brawlstars|gtav|genshinimpact|clashroyale)$",
+            pattern=(
+                r"^(minecraft|roblox|fortnite|"
+                r"valorant|rocketleague|"
+                r"brawlstars|gtav|genshinimpact|"
+                r"clashroyale)$"
+            ),
         )
     )
-    app.add_handler(
-        CallbackQueryHandler(show_searched_game, pattern=r"^searched_game$")
-    )
-    app.add_handler(CallbackQueryHandler(begin_search, pattern=r"^search_game$"))
-    app.add_handler(CallbackQueryHandler(begin_request, pattern=r"^request_game$"))
+
     app.add_handler(
         CallbackQueryHandler(
-            request_searched_game, pattern=r"^request_searched_game$"
+            show_searched_game,
+            pattern=r"^searched_game$",
         )
     )
-    app.add_handler(CallbackQueryHandler(back, pattern=r"^back$"))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
+
+    app.add_handler(
+        CallbackQueryHandler(
+            begin_search,
+            pattern=r"^search_game$",
+        )
+    )
+
+    app.add_handler(
+        CallbackQueryHandler(
+            begin_request,
+            pattern=r"^request_game$",
+        )
+    )
+
+    app.add_handler(
+        CallbackQueryHandler(
+            request_searched_game,
+            pattern=r"^request_searched_game$",
+        )
+    )
+
+    app.add_handler(
+        CallbackQueryHandler(
+            back,
+            pattern=r"^back$",
+        )
+    )
+
+    app.add_handler(
+        MessageHandler(
+            filters.TEXT & ~filters.COMMAND,
+            handle_text,
+        )
+    )
 
     print("🤖 البوت يعمل الآن...")
+
     app.run_polling()
 
 
