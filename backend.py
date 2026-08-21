@@ -1,80 +1,38 @@
 import os
 import threading
-import time
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import telegram_bot
 
 
+PORT = int(os.getenv("PORT", "10000"))
+
+
 class HealthHandler(BaseHTTPRequestHandler):
+
     def do_GET(self):
-        if self.path in ("/", "/health", "/healthz"):
-            body = b'{"status":"ok","service":"telegram-game-info-bot"}'
-
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-
-            self.wfile.write(body)
-            return
-
-        self.send_error(404)
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
+        self.end_headers()
+        self.wfile.write(b"OK")
 
     def log_message(self, format, *args):
         return
 
 
 def start_health_server():
-    port = int(os.environ.get("PORT", "10000"))
-
-    server = ThreadingHTTPServer(
-        ("0.0.0.0", port),
-        HealthHandler,
-    )
+    server = HTTPServer(("0.0.0.0", PORT), HealthHandler)
 
     print(
-        f"🌐 Health server listening on port {port}",
+        f"🌐 Health server listening on port {PORT}",
         flush=True,
     )
 
     server.serve_forever()
 
 
-def run_bot_forever():
-    restart_delay = 5
-
-    while True:
-        try:
-            print(
-                "🚀 Starting Telegram bot...",
-                flush=True,
-            )
-
-            telegram_bot.main()
-
-            print(
-                "⚠️ Bot stopped normally. "
-                f"Restarting in {restart_delay} seconds...",
-                flush=True,
-            )
-
-        except Exception as error:
-            print(
-                f"❌ Bot stopped with "
-                f"{type(error).__name__}: {error}",
-                flush=True,
-            )
-
-            print(
-                f"🔄 Restarting in {restart_delay} seconds...",
-                flush=True,
-            )
-
-        time.sleep(restart_delay)
-
-
 def main():
+
     print("🚀 Starting backend...", flush=True)
 
     health_thread = threading.Thread(
@@ -89,7 +47,14 @@ def main():
         flush=True,
     )
 
-    run_bot_forever()
+    print(
+        "🚀 Starting Telegram bot...",
+        flush=True,
+    )
+
+    # نشغل البوت مرة واحدة فقط.
+    # لا يوجد restart loop حتى نعرف مصدر الـ Conflict.
+    telegram_bot.main()
 
 
 if __name__ == "__main__":
