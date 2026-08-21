@@ -1,16 +1,29 @@
+import json
 import os
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
 
-TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("BOT_TOKEN")
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import (
+    Application,
+    CallbackQueryHandler,
+    CommandHandler,
+    ContextTypes,
+    MessageHandler,
+    filters,
+)
+
+
+TOKEN = os.getenv("BOT_TOKEN")
+REQUESTS_FILE = Path(os.getenv("GAME_REQUESTS_FILE", "game_requests.json"))
 
 
 # =========================
-# معلومات الألعاب
+# Game information
 # =========================
 
 games = {
-
     "minecraft": {
         "name": "Minecraft",
         "emoji": "⛏️",
@@ -19,18 +32,16 @@ games = {
             "developer": "Mojang Studios",
             "release": "18 نوفمبر 2011",
             "genre": "بقاء، مغامرات، بناء",
-            "platforms": "PC، PlayStation، Xbox، Nintendo Switch، الجوال"
+            "platforms": "PC، PlayStation، Xbox، Nintendo Switch، الجوال",
         },
         "en": {
             "description": "A sandbox game focused on building, survival and adventure.",
             "developer": "Mojang Studios",
             "release": "November 18, 2011",
             "genre": "Survival, Adventure, Sandbox",
-            "platforms": "PC, PlayStation, Xbox, Nintendo Switch, Mobile"
-        }
+            "platforms": "PC, PlayStation, Xbox, Nintendo Switch, Mobile",
+        },
     },
-
-
     "roblox": {
         "name": "Roblox",
         "emoji": "🎮",
@@ -39,18 +50,16 @@ games = {
             "developer": "Roblox Corporation",
             "release": "1 سبتمبر 2006",
             "genre": "منصة ألعاب، اجتماعية",
-            "platforms": "PC، Xbox، PlayStation، الجوال"
+            "platforms": "PC، Xbox، PlayStation، الجوال",
         },
         "en": {
             "description": "An online platform where users can play and create different experiences.",
             "developer": "Roblox Corporation",
             "release": "September 1, 2006",
             "genre": "Gaming Platform, Social",
-            "platforms": "PC, Xbox, PlayStation, Mobile"
-        }
+            "platforms": "PC, Xbox, PlayStation, Mobile",
+        },
     },
-
-
     "fortnite": {
         "name": "Fortnite",
         "emoji": "🚌",
@@ -59,18 +68,16 @@ games = {
             "developer": "Epic Games",
             "release": "25 يوليو 2017",
             "genre": "باتل رويال، أكشن، بناء",
-            "platforms": "PC، PlayStation، Xbox، Nintendo Switch، الجوال"
+            "platforms": "PC، PlayStation، Xbox، Nintendo Switch، الجوال",
         },
         "en": {
             "description": "An online game combining combat, building and exploration.",
             "developer": "Epic Games",
             "release": "July 25, 2017",
             "genre": "Battle Royale, Action, Building",
-            "platforms": "PC, PlayStation, Xbox, Nintendo Switch, Mobile"
-        }
+            "platforms": "PC, PlayStation, Xbox, Nintendo Switch, Mobile",
+        },
     },
-
-
     "valorant": {
         "name": "Valorant",
         "emoji": "🎯",
@@ -79,18 +86,16 @@ games = {
             "developer": "Riot Games",
             "release": "2 يونيو 2020",
             "genre": "تصويب تكتيكي، تنافسية",
-            "platforms": "PC، PlayStation، Xbox"
+            "platforms": "PC، PlayStation، Xbox",
         },
         "en": {
             "description": "A competitive tactical shooter featuring unique agents and abilities.",
             "developer": "Riot Games",
             "release": "June 2, 2020",
             "genre": "Tactical Shooter, Competitive",
-            "platforms": "PC, PlayStation, Xbox"
-        }
+            "platforms": "PC, PlayStation, Xbox",
+        },
     },
-
-
     "rocketleague": {
         "name": "Rocket League",
         "emoji": "🏎️",
@@ -99,18 +104,16 @@ games = {
             "developer": "Psyonix",
             "release": "7 يوليو 2015",
             "genre": "رياضة، سيارات، تنافسية",
-            "platforms": "PC، PlayStation، Xbox، Nintendo Switch"
+            "platforms": "PC، PlayStation، Xbox، Nintendo Switch",
         },
         "en": {
             "description": "A competitive sports game combining soccer with rocket-powered cars.",
             "developer": "Psyonix",
             "release": "July 7, 2015",
             "genre": "Sports, Racing, Competitive",
-            "platforms": "PC, PlayStation, Xbox, Nintendo Switch"
-        }
+            "platforms": "PC, PlayStation, Xbox, Nintendo Switch",
+        },
     },
-
-
     "brawlstars": {
         "name": "Brawl Stars",
         "emoji": "⭐",
@@ -119,348 +122,460 @@ games = {
             "developer": "Supercell",
             "release": "12 ديسمبر 2018",
             "genre": "أكشن، متعددة اللاعبين",
-            "platforms": "Android، iOS"
+            "platforms": "Android، iOS",
         },
         "en": {
             "description": "A multiplayer action game featuring different characters and game modes.",
             "developer": "Supercell",
             "release": "December 12, 2018",
             "genre": "Action, Multiplayer",
-            "platforms": "Android, iOS"
-        }
-    }
-
+            "platforms": "Android, iOS",
+        },
+    },
+    "gtav": {
+        "name": "GTA V",
+        "emoji": "🚗",
+        "aliases": ["gta 5", "grand theft auto v", "grand theft auto 5"],
+        "ar": {
+            "description": "لعبة أكشن ومغامرات في عالم مفتوح تدور أحداثها في مدينة لوس سانتوس.",
+            "developer": "Rockstar Games",
+            "release": "17 سبتمبر 2013",
+            "genre": "أكشن، مغامرات، عالم مفتوح",
+            "platforms": "PC، PlayStation، Xbox",
+        },
+        "en": {
+            "description": "An open-world action-adventure game set in the city of Los Santos.",
+            "developer": "Rockstar Games",
+            "release": "September 17, 2013",
+            "genre": "Action, Adventure, Open World",
+            "platforms": "PC, PlayStation, Xbox",
+        },
+    },
+    "genshinimpact": {
+        "name": "Genshin Impact",
+        "emoji": "✨",
+        "ar": {
+            "description": "لعبة تقمص أدوار وأكشن بعالم مفتوح مليء بالاستكشاف والشخصيات.",
+            "developer": "HoYoverse",
+            "release": "28 سبتمبر 2020",
+            "genre": "أكشن، تقمص أدوار، عالم مفتوح",
+            "platforms": "PC، PlayStation، Android، iOS",
+        },
+        "en": {
+            "description": "An open-world action RPG centered on exploration and a diverse cast of characters.",
+            "developer": "HoYoverse",
+            "release": "September 28, 2020",
+            "genre": "Action RPG, Open World",
+            "platforms": "PC, PlayStation, Android, iOS",
+        },
+    },
+    "clashroyale": {
+        "name": "Clash Royale",
+        "emoji": "👑",
+        "ar": {
+            "description": "لعبة استراتيجية في الوقت الحقيقي تجمع بين البطاقات والمعارك متعددة اللاعبين.",
+            "developer": "Supercell",
+            "release": "2 مارس 2016",
+            "genre": "استراتيجية، بطاقات، تنافسية",
+            "platforms": "Android، iOS",
+        },
+        "en": {
+            "description": "A real-time strategy game combining collectible cards with multiplayer battles.",
+            "developer": "Supercell",
+            "release": "March 2, 2016",
+            "genre": "Strategy, Card, Competitive",
+            "platforms": "Android, iOS",
+        },
+    },
 }
 
 
-# =========================
-# قائمة الألعاب
-# =========================
+GAME_ALIASES = {
+    "gta v": "gtav",
+    "gta 5": "gtav",
+    "grand theft auto v": "gtav",
+    "grand theft auto 5": "gtav",
+}
 
-def get_game_buttons():
 
-    return InlineKeyboardMarkup([
+def normalize_game_name(value: str) -> str:
+    normalized = " ".join(value.strip().casefold().split())
+    return normalized.replace("’", "'")
 
+
+def find_game_id(game_name: str) -> str | None:
+    normalized = normalize_game_name(game_name)
+    if normalized in GAME_ALIASES:
+        return GAME_ALIASES[normalized]
+
+    for game_id, game in games.items():
+        names = [game["name"], game_id, *game.get("aliases", [])]
+        if normalized in {normalize_game_name(name) for name in names}:
+            return game_id
+    return None
+
+
+def get_language(context: ContextTypes.DEFAULT_TYPE) -> str:
+    return context.user_data.get("language", "ar")
+
+
+def menu_text(language: str) -> str:
+    if language == "ar":
+        return "🎮 اختر اللعبة التي تريد معرفة معلومات عنها:"
+    return "🎮 Choose a game to get information about:"
+
+
+def get_game_buttons(language: str) -> InlineKeyboardMarkup:
+    keyboard = [
         [
             InlineKeyboardButton(
-                "⛏️ Minecraft",
-                callback_data="minecraft"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🎮 Roblox",
-                callback_data="roblox"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🚌 Fortnite",
-                callback_data="fortnite"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🎯 Valorant",
-                callback_data="valorant"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "🏎️ Rocket League",
-                callback_data="rocketleague"
-            )
-        ],
-
-        [
-            InlineKeyboardButton(
-                "⭐ Brawl Stars",
-                callback_data="brawlstars"
+                f"{game['emoji']} {game['name']}",
+                callback_data=game_id,
             )
         ]
+        for game_id, game in games.items()
+    ]
+    if language == "ar":
+        keyboard.extend(
+            [
+                [InlineKeyboardButton("🔎 بحث عن لعبة", callback_data="search_game")],
+                [InlineKeyboardButton("➕ طلب لعبة", callback_data="request_game")],
+            ]
+        )
+    else:
+        keyboard.extend(
+            [
+                [
+                    InlineKeyboardButton(
+                        "🔎 Search for a Game", callback_data="search_game"
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        "➕ Request a Game", callback_data="request_game"
+                    )
+                ],
+            ]
+        )
+    return InlineKeyboardMarkup(keyboard)
 
-    ])
+
+def back_markup(language: str) -> InlineKeyboardMarkup:
+    label = "🔙 رجوع" if language == "ar" else "🔙 Back"
+    return InlineKeyboardMarkup(
+        [[InlineKeyboardButton(label, callback_data="back")]]
+    )
+
+
+def game_info_text(game_id: str, language: str) -> str:
+    game = games[game_id]
+    info = game[language]
+    if language == "ar":
+        return (
+            f"{game['emoji']} *{game['name']}*\n\n"
+            f"📖 *الوصف:*\n{info['description']}\n\n"
+            f"👨‍💻 *المطور:*\n{info['developer']}\n\n"
+            f"📅 *تاريخ الإصدار:*\n{info['release']}\n\n"
+            f"🎯 *النوع:*\n{info['genre']}\n\n"
+            f"💻 *المنصات:*\n{info['platforms']}"
+        )
+    return (
+        f"{game['emoji']} *{game['name']}*\n\n"
+        f"📖 *Description:*\n{info['description']}\n\n"
+        f"👨‍💻 *Developer:*\n{info['developer']}\n\n"
+        f"📅 *Release Date:*\n{info['release']}\n\n"
+        f"🎯 *Genre:*\n{info['genre']}\n\n"
+        f"💻 *Platforms:*\n{info['platforms']}"
+    )
+
+
+def load_requests() -> list[dict]:
+    try:
+        with REQUESTS_FILE.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+        return data if isinstance(data, list) else []
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return []
+
+
+def save_requests(requests: list[dict]) -> None:
+    REQUESTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            dir=REQUESTS_FILE.parent,
+            prefix=f".{REQUESTS_FILE.name}.",
+            delete=False,
+        ) as file:
+            json.dump(requests, file, ensure_ascii=False, indent=2)
+            file.write("\n")
+            temporary_path = Path(file.name)
+        temporary_path.replace(REQUESTS_FILE)
+    finally:
+        if temporary_path and temporary_path.exists():
+            temporary_path.unlink()
+
+
+def register_game_request(
+    game_name: str, update: Update, language: str
+) -> tuple[bool, str]:
+    game_name = " ".join(game_name.strip().split())
+    if find_game_id(game_name):
+        if language == "ar":
+            return False, "✅ هذه اللعبة متوفرة بالفعل في البوت."
+        return False, "✅ This game is already available in the bot."
+
+    requests = load_requests()
+    normalized = normalize_game_name(game_name)
+    if any(item.get("normalized_name") == normalized for item in requests):
+        if language == "ar":
+            return False, f'✅ تم استلام طلب "{game_name}" مسبقًا.'
+        return False, f'✅ A request for "{game_name}" has already been received.'
+
+    user = update.effective_user
+    requests.append(
+        {
+            "game_name": game_name,
+            "normalized_name": normalized,
+            "user_id": user.id if user else None,
+            "username": user.username if user else None,
+            "language": language,
+            "requested_at": datetime.now(timezone.utc).isoformat(),
+        }
+    )
+    save_requests(requests)
+    if language == "ar":
+        return True, f'✅ تم استلام طلبك بإضافة "{game_name}".\nشكرًا على اقتراحك! ❤️'
+    return True, f'✅ Your request for "{game_name}" has been received.\nThank you for your suggestion! ❤️'
+
+
+async def send_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    language = get_language(context)
+    context.user_data.pop("input_mode", None)
+    context.user_data.pop("pending_game_request", None)
+    if update.callback_query:
+        await update.callback_query.edit_message_text(
+            menu_text(language), reply_markup=get_game_buttons(language)
+        )
+    else:
+        await update.message.reply_text(
+            menu_text(language), reply_markup=get_game_buttons(language)
+        )
 
 
 # =========================
-# البداية
+# Start and language selection
 # =========================
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-    keyboard = InlineKeyboardMarkup([
-
+    context.user_data.clear()
+    keyboard = InlineKeyboardMarkup(
         [
-            InlineKeyboardButton(
-                "🇸🇦 العربية",
-                callback_data="language_ar"
-            ),
-
-            InlineKeyboardButton(
-                "🇺🇸 English",
-                callback_data="language_en"
-            )
+            [
+                InlineKeyboardButton("🇸🇦 العربية", callback_data="language_ar"),
+                InlineKeyboardButton("🇺🇸 English", callback_data="language_en"),
+            ]
         ]
-
-    ])
-
+    )
     await update.message.reply_text(
-
         "👋 أهلاً بك في بوت معلومات الألعاب!\n\n"
         "اختر اللغة / Choose your language:",
-
-        reply_markup=keyboard
-
+        reply_markup=keyboard,
     )
 
 
-# =========================
-# اختيار اللغة
-# =========================
-
-async def choose_language(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
-
+async def choose_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-
     await query.answer()
-
-    language = query.data.replace(
-        "language_",
-        ""
-    )
-
-    context.user_data["language"] = language
-
-    if language == "ar":
-
-        text = (
-            "🎮 اختر اللعبة التي تريد معرفة معلومات عنها:"
-        )
-
-    else:
-
-        text = (
-            "🎮 Choose a game to get information about:"
-        )
-
-    await query.edit_message_text(
-
-        text,
-
-        reply_markup=get_game_buttons()
-
-    )
+    context.user_data["language"] = query.data.replace("language_", "")
+    await send_menu(update, context)
 
 
 # =========================
-# عرض معلومات اللعبة
+# Game display
 # =========================
 
-async def show_game(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
-
+async def show_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-
     await query.answer()
-
     game_id = query.data
-
     if game_id not in games:
-
-        await query.edit_message_text(
-            "❌ اللعبة غير موجودة."
-        )
-
+        await query.edit_message_text("❌ اللعبة غير موجودة.")
         return
 
-    game = games[game_id]
-
-    language = context.user_data.get(
-        "language",
-        "ar"
-    )
-
-    info = game[language]
-
-
-    if language == "ar":
-
-        text = (
-
-            f"{game['emoji']} *{game['name']}*\n\n"
-
-            f"📖 *الوصف:*\n"
-            f"{info['description']}\n\n"
-
-            f"👨‍💻 *المطور:*\n"
-            f"{info['developer']}\n\n"
-
-            f"📅 *تاريخ الإصدار:*\n"
-            f"{info['release']}\n\n"
-
-            f"🎯 *النوع:*\n"
-            f"{info['genre']}\n\n"
-
-            f"💻 *المنصات:*\n"
-            f"{info['platforms']}"
-
-        )
-
-        back_text = "🔙 رجوع"
-
-
-    else:
-
-        text = (
-
-            f"{game['emoji']} *{game['name']}*\n\n"
-
-            f"📖 *Description:*\n"
-            f"{info['description']}\n\n"
-
-            f"👨‍💻 *Developer:*\n"
-            f"{info['developer']}\n\n"
-
-            f"📅 *Release Date:*\n"
-            f"{info['release']}\n\n"
-
-            f"🎯 *Genre:*\n"
-            f"{info['genre']}\n\n"
-
-            f"💻 *Platforms:*\n"
-            f"{info['platforms']}"
-
-        )
-
-        back_text = "🔙 Back"
-
-
-    keyboard = InlineKeyboardMarkup([
-
-        [
-            InlineKeyboardButton(
-                back_text,
-                callback_data="back"
-            )
-        ]
-
-    ])
-
-
+    language = get_language(context)
+    context.user_data.pop("input_mode", None)
     await query.edit_message_text(
-
-        text,
-
+        game_info_text(game_id, language),
         parse_mode="Markdown",
-
-        reply_markup=keyboard
-
+        reply_markup=back_markup(language),
     )
 
 
-# =========================
-# الرجوع
-# =========================
-
-async def back(
-    update: Update,
-    context: ContextTypes.DEFAULT_TYPE
-):
-
+async def show_searched_game(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-
     await query.answer()
+    game_id = context.user_data.get("searched_game_id")
+    if game_id not in games:
+        await send_menu(update, context)
+        return
 
-    language = context.user_data.get(
-        "language",
-        "ar"
-    )
-
-    if language == "ar":
-
-        text = (
-            "🎮 اختر اللعبة التي تريد معرفة معلومات عنها:"
-        )
-
-    else:
-
-        text = (
-            "🎮 Choose a game to get information about:"
-        )
-
+    language = get_language(context)
+    context.user_data.pop("input_mode", None)
     await query.edit_message_text(
-
-        text,
-
-        reply_markup=get_game_buttons()
-
+        game_info_text(game_id, language),
+        parse_mode="Markdown",
+        reply_markup=back_markup(language),
     )
 
 
 # =========================
-# تشغيل البوت
+# Search and request flows
 # =========================
+
+def prompt_text(language: str, mode: str) -> str:
+    if mode == "search":
+        return (
+            "🔎 اكتب اسم اللعبة التي تريد البحث عنها:"
+            if language == "ar"
+            else "🔎 Enter the name of the game you want to search for:"
+        )
+    return (
+        "🎮 اكتب اسم اللعبة التي تريد إضافتها:"
+        if language == "ar"
+        else "🎮 Enter the name of the game you want to request:"
+    )
+
+
+async def begin_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    language = get_language(context)
+    context.user_data["input_mode"] = "search"
+    await query.edit_message_text(
+        prompt_text(language, "search"), reply_markup=back_markup(language)
+    )
+
+
+async def begin_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    language = get_language(context)
+    context.user_data["input_mode"] = "request"
+    await query.edit_message_text(
+        prompt_text(language, "request"), reply_markup=back_markup(language)
+    )
+
+
+async def request_searched_game(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+):
+    query = update.callback_query
+    await query.answer()
+    language = get_language(context)
+    game_name = context.user_data.pop("pending_game_request", "")
+    if not game_name:
+        await send_menu(update, context)
+        return
+
+    _, message = register_game_request(game_name, update, language)
+    context.user_data.pop("input_mode", None)
+    await query.edit_message_text(message, reply_markup=back_markup(language))
+
+
+async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    mode = context.user_data.get("input_mode")
+    if mode not in {"search", "request"} or not update.message:
+        return
+
+    game_name = update.message.text.strip()
+    language = get_language(context)
+    context.user_data.pop("input_mode", None)
+    if not game_name:
+        await update.message.reply_text(
+            prompt_text(language, mode), reply_markup=back_markup(language)
+        )
+        context.user_data["input_mode"] = mode
+        return
+
+    if mode == "search":
+        game_id = find_game_id(game_name)
+        if game_id:
+            context.user_data["searched_game_id"] = game_id
+            await update.message.reply_text(
+                game_info_text(game_id, language),
+                parse_mode="Markdown",
+                reply_markup=back_markup(language),
+            )
+            return
+
+        context.user_data["pending_game_request"] = game_name
+        if language == "ar":
+            text = f'❌ اللعبة "{game_name}" غير موجودة حاليًا.'
+            button = f"➕ طلب إضافة {game_name}"
+        else:
+            text = f'❌ "{game_name}" isn\'t available yet.'
+            button = f"➕ Request {game_name}"
+        await update.message.reply_text(
+            text,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [InlineKeyboardButton(button[:60], callback_data="request_searched_game")],
+                    [InlineKeyboardButton(
+                        "🔙 رجوع" if language == "ar" else "🔙 Back",
+                        callback_data="back",
+                    )],
+                ]
+            ),
+        )
+        return
+
+    _, message = register_game_request(game_name, update, language)
+    await update.message.reply_text(message, reply_markup=back_markup(language))
+
+
+# =========================
+# Back and application setup
+# =========================
+
+async def back(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    await send_menu(update, context)
+
 
 def main():
-
     if not TOKEN:
-
-        print(
-            "❌ TELEGRAM_BOT_TOKEN غير موجود في Secrets"
-        )
-
+        print("❌ BOT_TOKEN غير موجود في Secrets")
         return
 
-
-    app = Application.builder().token(
-        TOKEN
-    ).build()
-
-
+    app = Application.builder().token(TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
     app.add_handler(
-        CommandHandler(
-            "start",
-            start
-        )
+        CallbackQueryHandler(choose_language, pattern=r"^language_(ar|en)$")
     )
-
-
-    app.add_handler(
-        CallbackQueryHandler(
-            choose_language,
-            pattern=r"^language_(ar|en)$"
-        )
-    )
-
-
     app.add_handler(
         CallbackQueryHandler(
             show_game,
-            pattern=r"^(minecraft|roblox|fortnite|valorant|rocketleague|brawlstars)$"
+            pattern=r"^(minecraft|roblox|fortnite|valorant|rocketleague|brawlstars|gtav|genshinimpact|clashroyale)$",
         )
     )
-
-
+    app.add_handler(
+        CallbackQueryHandler(show_searched_game, pattern=r"^searched_game$")
+    )
+    app.add_handler(CallbackQueryHandler(begin_search, pattern=r"^search_game$"))
+    app.add_handler(CallbackQueryHandler(begin_request, pattern=r"^request_game$"))
     app.add_handler(
         CallbackQueryHandler(
-            back,
-            pattern=r"^back$"
+            request_searched_game, pattern=r"^request_searched_game$"
         )
     )
-
+    app.add_handler(CallbackQueryHandler(back, pattern=r"^back$"))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 
     print("🤖 البوت يعمل الآن...")
-
-
     app.run_polling()
 
 
