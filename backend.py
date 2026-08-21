@@ -1,7 +1,5 @@
 import os
 import threading
-import time
-import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import telegram_bot
@@ -41,41 +39,8 @@ def start_health_server():
     server.serve_forever()
 
 
-def run_bot_forever():
-    restart_delay = 5
-
-    while True:
-        try:
-            print(
-                "🚀 Starting Telegram bot...",
-                flush=True,
-            )
-
-            telegram_bot.main()
-
-            print(
-                f"⚠️ Bot stopped normally. "
-                f"Restarting in {restart_delay} seconds...",
-                flush=True,
-            )
-
-        except Exception as error:
-            print(
-                f"❌ Bot stopped unexpectedly "
-                f"({type(error).__name__}): {error}",
-                flush=True,
-            )
-
-            traceback.print_exc()
-
-        time.sleep(restart_delay)
-
-
 def main():
-    print(
-        "🚀 Starting backend...",
-        flush=True,
-    )
+    print("🚀 Starting backend...", flush=True)
 
     health_thread = threading.Thread(
         target=start_health_server,
@@ -89,7 +54,12 @@ def main():
         flush=True,
     )
 
-    run_bot_forever()
+    print(
+        "🚀 Starting Telegram bot...",
+        flush=True,
+    )
+
+    telegram_bot.main()
 
 
 if __name__ == "__main__":
