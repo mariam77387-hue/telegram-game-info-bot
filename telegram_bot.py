@@ -338,6 +338,22 @@ def get_db_connection():
 def init_database():
     with get_db_connection() as conn:
         with conn.cursor() as cur:
+
+            # جدول المستخدمين
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS users (
+                    user_id BIGINT PRIMARY KEY,
+                    username TEXT,
+                    first_name TEXT,
+                    language TEXT NOT NULL DEFAULT 'ar',
+                    first_seen_at TIMESTAMPTZ NOT NULL,
+                    last_seen_at TIMESTAMPTZ NOT NULL
+                )
+                """
+            )
+
+            # جدول طلبات الألعاب الموجود أصلًا
             cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS game_requests (
@@ -356,6 +372,208 @@ def init_database():
 
     print("✅ PostgreSQL database initialized.", flush=True)
 
+
+# =========================
+# User registration
+# =========================
+
+def register_user(
+    update: Update,
+    language: str = "ar",
+):
+    user = update.effective_user
+
+    if not user:
+        return
+
+    now = datetime.now(timezone.utc)
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO users
+                    (
+                        user_id,
+                        username,
+                        first_name,
+                        language,
+                        first_seen_at,
+                        last_seen_at
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s)
+
+                    ON CONFLICT (user_id)
+                    DO UPDATE SET
+                        username = EXCLUDED.username,
+                        first_name = EXCLUDED.first_name,
+                        last_seen_at = EXCLUDED.last_seen_at
+                    """,
+                    (
+                        user.id,
+                        user.username,
+                        user.first_name,
+                        language,
+                        now,
+                        now,
+                    ),
+                )
+
+            conn.commit()
+
+    except Exception as error:
+        print(
+            f"❌ Database error while registering user: {error}",
+            flush=True,
+        )
+
+
+def update_user_language(
+    update: Update,
+    language: str,
+):
+    user = update.effective_user
+
+    if not user:
+        return
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE users
+                    SET
+                        language = %s,
+                        last_seen_at = %s
+                    WHERE user_id = %s
+                    """,
+                    (
+                        language,
+                        datetime.now(timezone.utc),
+                        user.id,
+                    ),
+                )
+
+            conn.commit()
+
+    except Exception as error:
+        print(
+            f"❌ Database error while updating user language: {error}",
+            flush=True,
+        )
+
+
+# =========================
+# Admin statistics
+# =========================
+
+async def stats_command(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+    user = update.effective_user
+
+    if not user or not update.message:
+        return
+
+    if not ADMIN_ID or str(user.id) != str(ADMIN_ID).strip():
+        await update.message.reply_text(
+            "❌ You are not authorized to use this command."
+        )
+        return
+
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor() as cur:
+
+                # إجمالي المستخدمين
+                cur.execute(
+                    """
+                    SELECT COUNT(*) AS total
+                    FROM users
+                    """
+                )
+
+                total = int(cur.fetchone()["total"])
+
+                # المستخدمون الجدد اليوم حسب توقيت السعودية
+                cur.execute(
+                    """
+                    SELECT COUNT(*) AS today
+                    FROM users
+                    WHERE
+                        (first_seen_at AT TIME ZONE 'Asia/Riyadh')::date
+                        =
+                        (NOW() AT TIME ZONE 'Asia/Riyadh')::date
+                    """
+                )
+
+                today = int(cur.fetchone()["today"])
+
+                # المستخدمون الجدد خلال آخر 7 أيام
+                cur.execute(
+                    """
+                    SELECT COUNT(*) AS last_7_days
+                    FROM users
+                    WHERE first_seen_at >= NOW() - INTERVAL '7 days'
+                    """
+                )
+
+                last_7_days = int(
+                    cur.fetchone()["last_7_days"]
+                )
+
+                # آخر مستخدم دخل
+                cur.execute(
+                    """
+                    SELECT
+                        user_id,
+                        username,
+                        first_name,
+                        first_seen_at
+                    FROM users
+                    ORDER BY first_seen_at DESC
+                    LIMIT 1
+                    """
+                )
+
+                latest = cur.fetchone()
+
+    except Exception as error:
+        print(
+            f"❌ Database error while loading stats: {error}",
+            flush=True,
+        )
+
+        await update.message.reply_text(
+            "❌ حدث خطأ أثناء قراءة الإحصائيات."
+        )
+        return
+
+    if latest:
+        latest_name = latest["first_name"] or "بدون اسم"
+
+        if latest["username"]:
+            latest_name += f" (@{latest['username']})"
+    else:
+        latest_name = "لا يوجد"
+
+    message = (
+        "📊 إحصائيات البوت\n\n"
+        f"👥 إجمالي المستخدمين: {total}\n"
+        f"🆕 الجدد اليوم: {today}\n"
+        f"📈 الجدد خلال 7 أيام: {last_7_days}\n\n"
+        f"👤 آخر مستخدم جديد:\n{latest_name}"
+    )
+
+    await update.message.reply_text(message)
+
+
+# =========================
+# Game requests
+# =========================
 
 def register_game_request(
     game_name: str,
@@ -428,9 +646,7 @@ async def requests_command(
     if not user:
         return
 
-    admin_id = ADMIN_ID
-
-    if not admin_id or str(user.id) != str(admin_id).strip():
+    if not ADMIN_ID or str(user.id) != str(ADMIN_ID).strip():
         await update.message.reply_text(
             "❌ You are not authorized to use this command."
         )
@@ -554,6 +770,9 @@ async def start(
     context: ContextTypes.DEFAULT_TYPE,
 ):
 
+    # تسجيل المستخدم في PostgreSQL
+    register_user(update)
+
     context.user_data.clear()
 
     keyboard = InlineKeyboardMarkup(
@@ -587,10 +806,15 @@ async def choose_language(
 
     await query.answer()
 
-    context.user_data["language"] = query.data.replace(
+    language = query.data.replace(
         "language_",
         "",
     )
+
+    context.user_data["language"] = language
+
+    # حفظ اللغة في قاعدة البيانات
+    update_user_language(update, language)
 
     await send_menu(update, context)
 
@@ -855,6 +1079,10 @@ def main():
 
     app.add_handler(
         CommandHandler("requests", requests_command)
+    )
+
+    app.add_handler(
+        CommandHandler("stats", stats_command)
     )
 
     app.add_handler(
