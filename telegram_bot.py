@@ -1,4 +1,5 @@
 import os
+import random
 from datetime import datetime, timezone
 
 import psycopg
@@ -28,6 +29,7 @@ games = {
     "minecraft": {
         "name": "Minecraft",
         "emoji": "⛏️",
+        "rating": "غير محدد",
         "ar": {
             "description": "لعبة بناء ومغامرات وبقاء في عالم مفتوح.",
             "developer": "Mojang Studios",
@@ -43,9 +45,11 @@ games = {
             "platforms": "PC, PlayStation, Xbox, Nintendo Switch, Mobile",
         },
     },
+
     "roblox": {
         "name": "Roblox",
         "emoji": "🎮",
+        "rating": "غير محدد",
         "ar": {
             "description": "منصة ألعاب تتيح للمستخدمين لعب وصناعة تجارب مختلفة.",
             "developer": "Roblox Corporation",
@@ -61,9 +65,11 @@ games = {
             "platforms": "PC, Xbox, PlayStation, Mobile",
         },
     },
+
     "fortnite": {
         "name": "Fortnite",
         "emoji": "🚌",
+        "rating": "غير محدد",
         "ar": {
             "description": "لعبة أونلاين تجمع بين القتال والبناء والاستكشاف.",
             "developer": "Epic Games",
@@ -79,9 +85,11 @@ games = {
             "platforms": "PC, PlayStation, Xbox, Nintendo Switch, Mobile",
         },
     },
+
     "valorant": {
         "name": "Valorant",
         "emoji": "🎯",
+        "rating": "غير محدد",
         "ar": {
             "description": "لعبة تصويب تكتيكية تنافسية تعتمد على الشخصيات والقدرات.",
             "developer": "Riot Games",
@@ -97,9 +105,11 @@ games = {
             "platforms": "PC, PlayStation, Xbox",
         },
     },
+
     "rocketleague": {
         "name": "Rocket League",
         "emoji": "🏎️",
+        "rating": "غير محدد",
         "ar": {
             "description": "لعبة رياضية تجمع بين كرة القدم والسيارات السريعة.",
             "developer": "Psyonix",
@@ -115,9 +125,11 @@ games = {
             "platforms": "PC, PlayStation, Xbox, Nintendo Switch",
         },
     },
+
     "brawlstars": {
         "name": "Brawl Stars",
         "emoji": "⭐",
+        "rating": "غير محدد",
         "ar": {
             "description": "لعبة أكشن متعددة اللاعبين تضم شخصيات وأنماط لعب مختلفة.",
             "developer": "Supercell",
@@ -133,10 +145,16 @@ games = {
             "platforms": "Android, iOS",
         },
     },
+
     "gtav": {
         "name": "GTA V",
         "emoji": "🚗",
-        "aliases": ["gta 5", "grand theft auto v", "grand theft auto 5"],
+        "aliases": [
+            "gta 5",
+            "grand theft auto v",
+            "grand theft auto 5",
+        ],
+        "rating": "غير محدد",
         "ar": {
             "description": "لعبة أكشن ومغامرات في عالم مفتوح تدور أحداثها في مدينة لوس سانتوس.",
             "developer": "Rockstar Games",
@@ -152,9 +170,11 @@ games = {
             "platforms": "PC, PlayStation, Xbox",
         },
     },
+
     "genshinimpact": {
         "name": "Genshin Impact",
         "emoji": "✨",
+        "rating": "غير محدد",
         "ar": {
             "description": "لعبة تقمص أدوار وأكشن بعالم مفتوح مليء بالاستكشاف والشخصيات.",
             "developer": "HoYoverse",
@@ -170,9 +190,11 @@ games = {
             "platforms": "PC, PlayStation, Android, iOS",
         },
     },
+
     "clashroyale": {
         "name": "Clash Royale",
         "emoji": "👑",
+        "rating": "غير محدد",
         "ar": {
             "description": "لعبة استراتيجية في الوقت الحقيقي تجمع بين البطاقات والمعارك متعددة اللاعبين.",
             "developer": "Supercell",
@@ -188,6 +210,92 @@ games = {
             "platforms": "Android, iOS",
         },
     },
+
+    "overwatch": {
+        "name": "Overwatch",
+        "emoji": "🦸",
+        "rating": "غير محدد",
+        "ar": {
+            "description": "لعبة تصويب جماعية تنافسية تعتمد على شخصيات وقدرات مختلفة.",
+            "developer": "Blizzard Entertainment",
+            "release": "24 مايو 2016",
+            "genre": "تصويب، أكشن، جماعية",
+            "platforms": "PC، PlayStation، Xbox، Nintendo Switch",
+        },
+        "en": {
+            "description": "A competitive team-based shooter featuring heroes with unique abilities.",
+            "developer": "Blizzard Entertainment",
+            "release": "May 24, 2016",
+            "genre": "Shooter, Action, Multiplayer",
+            "platforms": "PC, PlayStation, Xbox, Nintendo Switch",
+        },
+    },
+
+    "eldenring": {
+        "name": "Elden Ring",
+        "emoji": "⚔️",
+        "rating": "غير محدد",
+        "ar": {
+            "description": "لعبة أكشن وتقمص أدوار بعالم مفتوح مليء بالاستكشاف والمواجهات.",
+            "developer": "FromSoftware",
+            "release": "25 فبراير 2022",
+            "genre": "أكشن، تقمص أدوار، عالم مفتوح",
+            "platforms": "PC، PlayStation، Xbox",
+        },
+        "en": {
+            "description": "An open-world action RPG focused on exploration, combat and discovery.",
+            "developer": "FromSoftware",
+            "release": "February 25, 2022",
+            "genre": "Action RPG, Open World",
+            "platforms": "PC, PlayStation, Xbox",
+        },
+    },
+
+    # =========================
+    # Red Dead Redemption
+    # =========================
+
+    "reddeadredemption": {
+        "name": "Red Dead Redemption",
+        "emoji": "🤠",
+        "rating": "غير محدد",
+        "series": "red_dead",
+        "ar": {
+            "description": "لعبة أكشن ومغامرات في عالم مفتوح تدور أحداثها في الغرب الأمريكي.",
+            "developer": "Rockstar San Diego",
+            "release": "18 مايو 2010",
+            "genre": "أكشن، مغامرات، عالم مفتوح",
+            "platforms": "PlayStation، Xbox، Nintendo Switch، PC",
+        },
+        "en": {
+            "description": "An open-world action-adventure game set in the American frontier.",
+            "developer": "Rockstar San Diego",
+            "release": "May 18, 2010",
+            "genre": "Action, Adventure, Open World",
+            "platforms": "PlayStation, Xbox, Nintendo Switch, PC",
+        },
+    },
+
+    "reddeadredemption2": {
+        "name": "Red Dead Redemption 2",
+        "emoji": "🤠",
+        "rating": "غير محدد",
+        "series": "red_dead",
+        "ar": {
+            "description": "مغامرة ملحمية في الغرب الأمريكي تتبع قصة عصابة Van der Linde.",
+            "developer": "Rockstar Studios",
+            "release": "26 أكتوبر 2018",
+            "genre": "أكشن، مغامرات، عالم مفتوح",
+            "platforms": "PC، PlayStation، Xbox",
+        },
+        "en": {
+            "description": "An epic open-world adventure following the Van der Linde gang.",
+            "developer": "Rockstar Studios",
+            "release": "October 26, 2018",
+            "genre": "Action, Adventure, Open World",
+            "platforms": "PC, PlayStation, Xbox",
+        },
+    },
 }
 
 
@@ -196,6 +304,12 @@ GAME_ALIASES = {
     "gta 5": "gtav",
     "grand theft auto v": "gtav",
     "grand theft auto 5": "gtav",
+    "rdr": "red_dead",
+    "red dead": "red_dead",
+    "red dead redemption": "reddeadredemption",
+    "red dead redemption 2": "reddeadredemption2",
+    "elden ring": "eldenring",
+    "overwatch": "overwatch",
 }
 
 
@@ -208,7 +322,12 @@ def find_game_id(game_name: str) -> str | None:
     normalized = normalize_game_name(game_name)
 
     if normalized in GAME_ALIASES:
-        return GAME_ALIASES[normalized]
+        game_id = GAME_ALIASES[normalized]
+
+        if game_id in games:
+            return game_id
+
+        return None
 
     for game_id, game in games.items():
         names = [game["name"], game_id, *game.get("aliases", [])]
@@ -233,7 +352,12 @@ def menu_text(language: str) -> str:
     return "🎮 Choose a game to get information about:"
 
 
+# =========================
+# Main game buttons
+# =========================
+
 def get_game_buttons(language: str) -> InlineKeyboardMarkup:
+
     keyboard = [
         [
             InlineKeyboardButton(
@@ -242,11 +366,31 @@ def get_game_buttons(language: str) -> InlineKeyboardMarkup:
             )
         ]
         for game_id, game in games.items()
+        if game_id not in {
+            "reddeadredemption",
+            "reddeadredemption2",
+        }
     ]
+
+    # Red Dead كقسم واحد
+    keyboard.append(
+        [
+            InlineKeyboardButton(
+                "🤠 Red Dead",
+                callback_data="red_dead",
+            )
+        ]
+    )
 
     if language == "ar":
         keyboard.extend(
             [
+                [
+                    InlineKeyboardButton(
+                        "🎲 اكتشف لعبة",
+                        callback_data="discover_game",
+                    )
+                ],
                 [
                     InlineKeyboardButton(
                         "🔎 بحث عن لعبة",
@@ -261,9 +405,16 @@ def get_game_buttons(language: str) -> InlineKeyboardMarkup:
                 ],
             ]
         )
+
     else:
         keyboard.extend(
             [
+                [
+                    InlineKeyboardButton(
+                        "🎲 Discover a Game",
+                        callback_data="discover_game",
+                    )
+                ],
                 [
                     InlineKeyboardButton(
                         "🔎 Search for a Game",
@@ -283,6 +434,7 @@ def get_game_buttons(language: str) -> InlineKeyboardMarkup:
 
 
 def back_markup(language: str) -> InlineKeyboardMarkup:
+
     label = "🔙 رجوع" if language == "ar" else "🔙 Back"
 
     return InlineKeyboardMarkup(
@@ -297,7 +449,15 @@ def back_markup(language: str) -> InlineKeyboardMarkup:
     )
 
 
-def game_info_text(game_id: str, language: str) -> str:
+# =========================
+# Game information
+# =========================
+
+def game_info_text(
+    game_id: str,
+    language: str,
+) -> str:
+
     game = games[game_id]
     info = game[language]
 
@@ -308,7 +468,8 @@ def game_info_text(game_id: str, language: str) -> str:
             f"👨‍💻 *المطور:*\n{info['developer']}\n\n"
             f"📅 *تاريخ الإصدار:*\n{info['release']}\n\n"
             f"🎯 *النوع:*\n{info['genre']}\n\n"
-            f"💻 *المنصات:*\n{info['platforms']}"
+            f"💻 *المنصات:*\n{info['platforms']}\n\n"
+            f"⭐ *التقييم:*\n{game['rating']}"
         )
 
     return (
@@ -317,7 +478,220 @@ def game_info_text(game_id: str, language: str) -> str:
         f"👨‍💻 *Developer:*\n{info['developer']}\n\n"
         f"📅 *Release Date:*\n{info['release']}\n\n"
         f"🎯 *Genre:*\n{info['genre']}\n\n"
-        f"💻 *Platforms:*\n{info['platforms']}"
+        f"💻 *Platforms:*\n{info['platforms']}\n\n"
+        f"⭐ *Rating:*\n{game['rating']}"
+    )
+
+
+# =========================
+# Discover a random game
+# =========================
+
+def get_discoverable_games():
+    return [
+        game_id
+        for game_id in games
+        if game_id not in {
+            "reddeadredemption",
+            "reddeadredemption2",
+        }
+    ]
+
+
+def choose_random_game(
+    context: ContextTypes.DEFAULT_TYPE,
+) -> str:
+
+    available_games = get_discoverable_games()
+
+    previous_game = context.user_data.get(
+        "discovered_game"
+    )
+
+    if (
+        previous_game in available_games
+        and len(available_games) > 1
+    ):
+        available_games = [
+            game_id
+            for game_id in available_games
+            if game_id != previous_game
+        ]
+
+    game_id = random.choice(available_games)
+
+    context.user_data["discovered_game"] = game_id
+
+    return game_id
+
+
+def discover_text(
+    game_id: str,
+    language: str,
+) -> str:
+
+    game = games[game_id]
+    info = game[language]
+
+    if language == "ar":
+        return (
+            "🎲 *اختيار عشوائي لك!*\n\n"
+            f"{game['emoji']} *{game['name']}*\n\n"
+            f"🎯 *النوع:* {info['genre']}\n"
+            f"💻 *المنصات:* {info['platforms']}\n"
+            f"⭐ *التقييم:* {game['rating']}\n\n"
+            "✨ يمكن تكون لعبتك القادمة!"
+        )
+
+    return (
+        "🎲 *Random pick for you!*\n\n"
+        f"{game['emoji']} *{game['name']}*\n\n"
+        f"🎯 *Genre:* {info['genre']}\n"
+        f"💻 *Platforms:* {info['platforms']}\n"
+        f"⭐ *Rating:* {game['rating']}\n\n"
+        "✨ Maybe this could be your next game!"
+    )
+
+
+def discover_markup(
+    language: str,
+) -> InlineKeyboardMarkup:
+
+    if language == "ar":
+        new_game = "🔄 لعبة ثانية"
+        info = "📖 معلومات اللعبة"
+        back = "🔙 رجوع"
+    else:
+        new_game = "🔄 Another Game"
+        info = "📖 Game Information"
+        back = "🔙 Back"
+
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    new_game,
+                    callback_data="discover_game",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    info,
+                    callback_data="discover_info",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    back,
+                    callback_data="back",
+                )
+            ],
+        ]
+    )
+
+
+async def discover_game(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+
+    query = update.callback_query
+
+    await query.answer()
+
+    language = get_language(context)
+
+    game_id = choose_random_game(context)
+
+    await query.edit_message_text(
+        discover_text(game_id, language),
+        parse_mode="Markdown",
+        reply_markup=discover_markup(language),
+    )
+
+
+async def discover_info(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+
+    query = update.callback_query
+
+    await query.answer()
+
+    language = get_language(context)
+
+    game_id = context.user_data.get(
+        "discovered_game"
+    )
+
+    if not game_id or game_id not in games:
+        game_id = choose_random_game(context)
+
+    await query.edit_message_text(
+        game_info_text(game_id, language),
+        parse_mode="Markdown",
+        reply_markup=back_markup(language),
+    )
+
+
+# =========================
+# Red Dead series
+# =========================
+
+def red_dead_markup(
+    language: str,
+) -> InlineKeyboardMarkup:
+
+    if language == "ar":
+        back = "🔙 رجوع"
+    else:
+        back = "🔙 Back"
+
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "🤠 Red Dead Redemption",
+                    callback_data="reddeadredemption",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "🤠 Red Dead Redemption 2",
+                    callback_data="reddeadredemption2",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    back,
+                    callback_data="back",
+                )
+            ],
+        ]
+    )
+
+
+async def red_dead_menu(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+
+    query = update.callback_query
+
+    await query.answer()
+
+    language = get_language(context)
+
+    if language == "ar":
+        text = "🤠 *Red Dead*\n\nأي لعبة تقصد؟"
+    else:
+        text = "🤠 *Red Dead*\n\nWhich game do you mean?"
+
+    await query.edit_message_text(
+        text,
+        parse_mode="Markdown",
+        reply_markup=red_dead_markup(language),
     )
 
 
@@ -326,8 +700,11 @@ def game_info_text(game_id: str, language: str) -> str:
 # =========================
 
 def get_db_connection():
+
     if not DATABASE_URL:
-        raise RuntimeError("DATABASE_URL غير موجود في Render Environment")
+        raise RuntimeError(
+            "DATABASE_URL غير موجود في Render Environment"
+        )
 
     return psycopg.connect(
         DATABASE_URL,
@@ -336,10 +713,11 @@ def get_db_connection():
 
 
 def init_database():
+
     with get_db_connection() as conn:
+
         with conn.cursor() as cur:
 
-            # جدول المستخدمين
             cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS users (
@@ -353,7 +731,6 @@ def init_database():
                 """
             )
 
-            # جدول طلبات الألعاب الموجود أصلًا
             cur.execute(
                 """
                 CREATE TABLE IF NOT EXISTS game_requests (
@@ -370,7 +747,10 @@ def init_database():
 
         conn.commit()
 
-    print("✅ PostgreSQL database initialized.", flush=True)
+    print(
+        "✅ PostgreSQL database initialized.",
+        flush=True,
+    )
 
 
 # =========================
@@ -381,6 +761,7 @@ def register_user(
     update: Update,
     language: str = "ar",
 ):
+
     user = update.effective_user
 
     if not user:
@@ -389,8 +770,11 @@ def register_user(
     now = datetime.now(timezone.utc)
 
     try:
+
         with get_db_connection() as conn:
+
             with conn.cursor() as cur:
+
                 cur.execute(
                     """
                     INSERT INTO users
@@ -423,6 +807,7 @@ def register_user(
             conn.commit()
 
     except Exception as error:
+
         print(
             f"❌ Database error while registering user: {error}",
             flush=True,
@@ -433,14 +818,18 @@ def update_user_language(
     update: Update,
     language: str,
 ):
+
     user = update.effective_user
 
     if not user:
         return
 
     try:
+
         with get_db_connection() as conn:
+
             with conn.cursor() as cur:
+
                 cur.execute(
                     """
                     UPDATE users
@@ -459,6 +848,7 @@ def update_user_language(
             conn.commit()
 
     except Exception as error:
+
         print(
             f"❌ Database error while updating user language: {error}",
             flush=True,
@@ -473,22 +863,27 @@ async def stats_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ):
+
     user = update.effective_user
 
     if not user or not update.message:
         return
 
-    if not ADMIN_ID or str(user.id) != str(ADMIN_ID).strip():
+    if (
+        not ADMIN_ID
+        or str(user.id) != str(ADMIN_ID).strip()
+    ):
         await update.message.reply_text(
             "❌ You are not authorized to use this command."
         )
         return
 
     try:
+
         with get_db_connection() as conn:
+
             with conn.cursor() as cur:
 
-                # إجمالي المستخدمين
                 cur.execute(
                     """
                     SELECT COUNT(*) AS total
@@ -496,28 +891,37 @@ async def stats_command(
                     """
                 )
 
-                total = int(cur.fetchone()["total"])
+                total = int(
+                    cur.fetchone()["total"]
+                )
 
-                # المستخدمون الجدد اليوم حسب توقيت السعودية
                 cur.execute(
                     """
                     SELECT COUNT(*) AS today
                     FROM users
                     WHERE
-                        (first_seen_at AT TIME ZONE 'Asia/Riyadh')::date
+                        (
+                            first_seen_at
+                            AT TIME ZONE 'Asia/Riyadh'
+                        )::date
                         =
-                        (NOW() AT TIME ZONE 'Asia/Riyadh')::date
+                        (
+                            NOW()
+                            AT TIME ZONE 'Asia/Riyadh'
+                        )::date
                     """
                 )
 
-                today = int(cur.fetchone()["today"])
+                today = int(
+                    cur.fetchone()["today"]
+                )
 
-                # المستخدمون الجدد خلال آخر 7 أيام
                 cur.execute(
                     """
                     SELECT COUNT(*) AS last_7_days
                     FROM users
-                    WHERE first_seen_at >= NOW() - INTERVAL '7 days'
+                    WHERE first_seen_at >=
+                        NOW() - INTERVAL '7 days'
                     """
                 )
 
@@ -525,7 +929,6 @@ async def stats_command(
                     cur.fetchone()["last_7_days"]
                 )
 
-                # آخر مستخدم دخل
                 cur.execute(
                     """
                     SELECT
@@ -542,6 +945,7 @@ async def stats_command(
                 latest = cur.fetchone()
 
     except Exception as error:
+
         print(
             f"❌ Database error while loading stats: {error}",
             flush=True,
@@ -550,14 +954,23 @@ async def stats_command(
         await update.message.reply_text(
             "❌ حدث خطأ أثناء قراءة الإحصائيات."
         )
+
         return
 
     if latest:
-        latest_name = latest["first_name"] or "بدون اسم"
+
+        latest_name = (
+            latest["first_name"]
+            or "بدون اسم"
+        )
 
         if latest["username"]:
-            latest_name += f" (@{latest['username']})"
+            latest_name += (
+                f" (@{latest['username']})"
+            )
+
     else:
+
         latest_name = "لا يوجد"
 
     message = (
@@ -581,19 +994,33 @@ def register_game_request(
     language: str,
 ) -> tuple[bool, str]:
 
-    game_name = " ".join(game_name.strip().split())
+    game_name = " ".join(
+        game_name.strip().split()
+    )
 
     if find_game_id(game_name):
-        if language == "ar":
-            return False, "✅ هذه اللعبة متوفرة بالفعل في البوت."
 
-        return False, "✅ This game is already available in the bot."
+        if language == "ar":
+            return (
+                False,
+                "✅ هذه اللعبة متوفرة بالفعل في البوت.",
+            )
+
+        return (
+            False,
+            "✅ This game is already available in the bot.",
+        )
 
     user = update.effective_user
-    normalized = normalize_game_name(game_name)
+
+    normalized = normalize_game_name(
+        game_name
+    )
 
     with get_db_connection() as conn:
+
         with conn.cursor() as cur:
+
             cur.execute(
                 """
                 INSERT INTO game_requests
@@ -620,6 +1047,7 @@ def register_game_request(
         conn.commit()
 
     if language == "ar":
+
         return (
             True,
             f'✅ تم استلام طلبك بإضافة "{game_name}".\n'
@@ -641,20 +1069,27 @@ async def requests_command(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ):
+
     user = update.effective_user
 
     if not user:
         return
 
-    if not ADMIN_ID or str(user.id) != str(ADMIN_ID).strip():
+    if (
+        not ADMIN_ID
+        or str(user.id) != str(ADMIN_ID).strip()
+    ):
         await update.message.reply_text(
             "❌ You are not authorized to use this command."
         )
         return
 
     try:
+
         with get_db_connection() as conn:
+
             with conn.cursor() as cur:
+
                 cur.execute(
                     """
                     SELECT
@@ -663,13 +1098,16 @@ async def requests_command(
                         COUNT(*) AS request_count
                     FROM game_requests
                     GROUP BY normalized_name
-                    ORDER BY request_count DESC, game_name ASC
+                    ORDER BY
+                        request_count DESC,
+                        game_name ASC
                     """
                 )
 
                 rows = cur.fetchall()
 
     except Exception as error:
+
         print(
             f"❌ Database error while loading requests: {error}",
             flush=True,
@@ -678,12 +1116,15 @@ async def requests_command(
         await update.message.reply_text(
             "❌ حدث خطأ أثناء قراءة طلبات الألعاب."
         )
+
         return
 
     if not rows:
+
         await update.message.reply_text(
             "📋 لا توجد طلبات ألعاب حتى الآن."
         )
+
         return
 
     lines = [
@@ -693,8 +1134,15 @@ async def requests_command(
 
     total = 0
 
-    for index, item in enumerate(rows, start=1):
-        count = int(item["request_count"])
+    for index, item in enumerate(
+        rows,
+        start=1,
+    ):
+
+        count = int(
+            item["request_count"]
+        )
+
         total += count
 
         if count == 1:
@@ -719,20 +1167,36 @@ async def requests_command(
     message = "\n".join(lines)
 
     if len(message) <= 4000:
-        await update.message.reply_text(message)
+
+        await update.message.reply_text(
+            message
+        )
+
         return
 
     current = "📋 طلبات الألعاب\n\n"
 
     for line in lines[2:]:
-        if len(current) + len(line) + 1 > 3900:
-            await update.message.reply_text(current)
+
+        if (
+            len(current)
+            + len(line)
+            + 1
+            > 3900
+        ):
+            await update.message.reply_text(
+                current
+            )
+
             current = ""
 
         current += line + "\n"
 
     if current.strip():
-        await update.message.reply_text(current)
+
+        await update.message.reply_text(
+            current
+        )
 
 
 # =========================
@@ -746,18 +1210,32 @@ async def send_menu(
 
     language = get_language(context)
 
-    context.user_data.pop("input_mode", None)
-    context.user_data.pop("pending_game_request", None)
+    context.user_data.pop(
+        "input_mode",
+        None,
+    )
+
+    context.user_data.pop(
+        "pending_game_request",
+        None,
+    )
 
     if update.callback_query:
+
         await update.callback_query.edit_message_text(
             menu_text(language),
-            reply_markup=get_game_buttons(language),
+            reply_markup=get_game_buttons(
+                language
+            ),
         )
+
     else:
+
         await update.message.reply_text(
             menu_text(language),
-            reply_markup=get_game_buttons(language),
+            reply_markup=get_game_buttons(
+                language
+            ),
         )
 
 
@@ -770,7 +1248,6 @@ async def start(
     context: ContextTypes.DEFAULT_TYPE,
 ):
 
-    # تسجيل المستخدم في PostgreSQL
     register_user(update)
 
     context.user_data.clear()
@@ -813,10 +1290,15 @@ async def choose_language(
 
     context.user_data["language"] = language
 
-    # حفظ اللغة في قاعدة البيانات
-    update_user_language(update, language)
+    update_user_language(
+        update,
+        language,
+    )
 
-    await send_menu(update, context)
+    await send_menu(
+        update,
+        context,
+    )
 
 
 # =========================
@@ -835,19 +1317,29 @@ async def show_game(
     game_id = query.data
 
     if game_id not in games:
+
         await query.edit_message_text(
             "❌ اللعبة غير موجودة."
         )
+
         return
 
     language = get_language(context)
 
-    context.user_data.pop("input_mode", None)
+    context.user_data.pop(
+        "input_mode",
+        None,
+    )
 
     await query.edit_message_text(
-        game_info_text(game_id, language),
+        game_info_text(
+            game_id,
+            language,
+        ),
         parse_mode="Markdown",
-        reply_markup=back_markup(language),
+        reply_markup=back_markup(
+            language
+        ),
     )
 
 
@@ -861,16 +1353,19 @@ def prompt_text(
 ) -> str:
 
     if mode == "search":
+
         return (
             "🔎 اكتب اسم اللعبة التي تريد البحث عنها:"
             if language == "ar"
-            else "🔎 Enter the name of the game you want to search for:"
+            else
+            "🔎 Enter the name of the game you want to search for:"
         )
 
     return (
         "🎮 اكتب اسم اللعبة التي تريد إضافتها:"
         if language == "ar"
-        else "🎮 Enter the name of the game you want to request:"
+        else
+        "🎮 Enter the name of the game you want to request:"
     )
 
 
@@ -884,11 +1379,17 @@ async def begin_search(
     await query.answer()
 
     language = get_language(context)
+
     context.user_data["input_mode"] = "search"
 
     await query.edit_message_text(
-        prompt_text(language, "search"),
-        reply_markup=back_markup(language),
+        prompt_text(
+            language,
+            "search",
+        ),
+        reply_markup=back_markup(
+            language
+        ),
     )
 
 
@@ -902,11 +1403,17 @@ async def begin_request(
     await query.answer()
 
     language = get_language(context)
+
     context.user_data["input_mode"] = "request"
 
     await query.edit_message_text(
-        prompt_text(language, "request"),
-        reply_markup=back_markup(language),
+        prompt_text(
+            language,
+            "request",
+        ),
+        reply_markup=back_markup(
+            language
+        ),
     )
 
 
@@ -927,7 +1434,12 @@ async def request_searched_game(
     )
 
     if not game_name:
-        await send_menu(update, context)
+
+        await send_menu(
+            update,
+            context,
+        )
+
         return
 
     _, message = register_game_request(
@@ -936,11 +1448,16 @@ async def request_searched_game(
         language,
     )
 
-    context.user_data.pop("input_mode", None)
+    context.user_data.pop(
+        "input_mode",
+        None,
+    )
 
     await query.edit_message_text(
         message,
-        reply_markup=back_markup(language),
+        reply_markup=back_markup(
+            language
+        ),
     )
 
 
@@ -949,49 +1466,110 @@ async def handle_text(
     context: ContextTypes.DEFAULT_TYPE,
 ):
 
-    mode = context.user_data.get("input_mode")
+    mode = context.user_data.get(
+        "input_mode"
+    )
 
     if (
-        mode not in {"search", "request"}
+        mode not in {
+            "search",
+            "request",
+        }
         or not update.message
         or not update.message.text
     ):
         return
 
     game_name = update.message.text.strip()
+
     language = get_language(context)
 
-    context.user_data.pop("input_mode", None)
+    context.user_data.pop(
+        "input_mode",
+        None,
+    )
 
     if not game_name:
+
         await update.message.reply_text(
-            prompt_text(language, mode),
-            reply_markup=back_markup(language),
+            prompt_text(
+                language,
+                mode,
+            ),
+            reply_markup=back_markup(
+                language
+            ),
         )
 
-        context.user_data["input_mode"] = mode
+        context.user_data[
+            "input_mode"
+        ] = mode
+
         return
 
     if mode == "search":
 
-        game_id = find_game_id(game_name)
+        game_id = find_game_id(
+            game_name
+        )
 
-        if game_id:
+        if game_id == "red_dead":
+
             await update.message.reply_text(
-                game_info_text(game_id, language),
+                "🤠 *Red Dead*\n\n"
+                "أي لعبة تقصد؟"
+                if language == "ar"
+                else
+                "🤠 *Red Dead*\n\n"
+                "Which game do you mean?",
                 parse_mode="Markdown",
-                reply_markup=back_markup(language),
+                reply_markup=red_dead_markup(
+                    language
+                ),
             )
+
             return
 
-        context.user_data["pending_game_request"] = game_name
+        if game_id:
+
+            await update.message.reply_text(
+                game_info_text(
+                    game_id,
+                    language,
+                ),
+                parse_mode="Markdown",
+                reply_markup=back_markup(
+                    language
+                ),
+            )
+
+            return
+
+        context.user_data[
+            "pending_game_request"
+        ] = game_name
 
         if language == "ar":
-            text = f'❌ اللعبة "{game_name}" غير موجودة حاليًا.'
-            button = f"➕ طلب إضافة {game_name}"
+
+            text = (
+                f'❌ اللعبة "{game_name}" '
+                "غير موجودة حاليًا."
+            )
+
+            button = (
+                f"➕ طلب إضافة {game_name}"
+            )
+
         else:
-            text = f'❌ "{game_name}" isn\'t available yet.'
-            button = f"➕ Request {game_name}"
+
+            text = (
+                f'❌ "{game_name}" '
+                "isn't available yet."
+            )
+
+            button = (
+                f"➕ Request {game_name}"
+            )
 
         await update.message.reply_text(
             text,
@@ -1000,7 +1578,9 @@ async def handle_text(
                     [
                         InlineKeyboardButton(
                             button[:60],
-                            callback_data="request_searched_game",
+                            callback_data=(
+                                "request_searched_game"
+                            ),
                         )
                     ],
                     [
@@ -1025,7 +1605,9 @@ async def handle_text(
 
     await update.message.reply_text(
         message,
-        reply_markup=back_markup(language),
+        reply_markup=back_markup(
+            language
+        ),
     )
 
 
@@ -1042,7 +1624,10 @@ async def back(
 
     await query.answer()
 
-    await send_menu(update, context)
+    await send_menu(
+        update,
+        context,
+    )
 
 
 # =========================
@@ -1052,17 +1637,21 @@ async def back(
 def main():
 
     if not TOKEN:
+
         print(
             "❌ BOT_TOKEN غير موجود في Secrets",
             flush=True,
         )
+
         return
 
     if not DATABASE_URL:
+
         print(
             "❌ DATABASE_URL غير موجود في Render Environment",
             flush=True,
         )
+
         return
 
     init_database()
@@ -1073,18 +1662,31 @@ def main():
         .build()
     )
 
+    # /start
     app.add_handler(
-        CommandHandler("start", start)
+        CommandHandler(
+            "start",
+            start,
+        )
     )
 
+    # /requests
     app.add_handler(
-        CommandHandler("requests", requests_command)
+        CommandHandler(
+            "requests",
+            requests_command,
+        )
     )
 
+    # /stats
     app.add_handler(
-        CommandHandler("stats", stats_command)
+        CommandHandler(
+            "stats",
+            stats_command,
+        )
     )
 
+    # Language
     app.add_handler(
         CallbackQueryHandler(
             choose_language,
@@ -1092,6 +1694,31 @@ def main():
         )
     )
 
+    # Discover
+    app.add_handler(
+        CallbackQueryHandler(
+            discover_game,
+            pattern=r"^discover_game$",
+        )
+    )
+
+    # Discover information
+    app.add_handler(
+        CallbackQueryHandler(
+            discover_info,
+            pattern=r"^discover_info$",
+        )
+    )
+
+    # Red Dead series
+    app.add_handler(
+        CallbackQueryHandler(
+            red_dead_menu,
+            pattern=r"^red_dead$",
+        )
+    )
+
+    # Games
     app.add_handler(
         CallbackQueryHandler(
             show_game,
@@ -1099,11 +1726,14 @@ def main():
                 r"^(minecraft|roblox|fortnite|"
                 r"valorant|rocketleague|"
                 r"brawlstars|gtav|genshinimpact|"
-                r"clashroyale)$"
+                r"clashroyale|overwatch|eldenring|"
+                r"reddeadredemption|"
+                r"reddeadredemption2)$"
             ),
         )
     )
 
+    # Search
     app.add_handler(
         CallbackQueryHandler(
             begin_search,
@@ -1111,6 +1741,7 @@ def main():
         )
     )
 
+    # Request
     app.add_handler(
         CallbackQueryHandler(
             begin_request,
@@ -1118,6 +1749,7 @@ def main():
         )
     )
 
+    # Request searched game
     app.add_handler(
         CallbackQueryHandler(
             request_searched_game,
@@ -1125,6 +1757,7 @@ def main():
         )
     )
 
+    # Back
     app.add_handler(
         CallbackQueryHandler(
             back,
@@ -1132,6 +1765,7 @@ def main():
         )
     )
 
+    # Text input
     app.add_handler(
         MessageHandler(
             filters.TEXT & ~filters.COMMAND,
@@ -1139,7 +1773,10 @@ def main():
         )
     )
 
-    print("🤖 البوت يعمل الآن...", flush=True)
+    print(
+        "🤖 البوت يعمل الآن...",
+        flush=True,
+    )
 
     app.run_polling()
 
