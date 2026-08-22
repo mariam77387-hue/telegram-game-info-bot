@@ -1,42 +1,28 @@
 # telegram_bot2.py
-
 import os
 import random
 from datetime import datetime, timezone
-
 import psycopg
 from psycopg.rows import dict_row
-
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackQueryHandler
-
-
 DATABASE_URL = os.getenv("DATABASE_URL")
-
-
+ADMIN_ID = os.getenv("ADMIN_ID")
 # =========================================================
 # PostgreSQL
 # =========================================================
-
 def get_db_connection():
-
     if not DATABASE_URL:
         raise RuntimeError(
             "DATABASE_URL غير موجود في Environment Variables"
         )
-
     return psycopg.connect(
         DATABASE_URL,
         row_factory=dict_row,
     )
-
-
 def init_quiz_database():
-
     with get_db_connection() as conn:
-
         with conn.cursor() as cur:
-
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS quiz_scores (
                     user_id BIGINT PRIMARY KEY,
@@ -49,21 +35,15 @@ def init_quiz_database():
                     current_streak INTEGER NOT NULL DEFAULT 0
                 )
             """)
-
         conn.commit()
-
     print(
         "✅ Quiz database initialized.",
         flush=True,
     )
-
-
 # =========================================================
 # أسئلة اختبار الألعاب
 # =========================================================
-
 quiz_questions = [
-
     {
         "question_ar": "من هو مطور Minecraft؟",
         "question_en": "Who developed Minecraft?",
@@ -81,7 +61,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "في أي مدينة تدور أحداث GTA V بشكل أساسي؟",
         "question_en": "Which city is GTA V mainly set in?",
@@ -99,7 +78,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "من مطور Elden Ring؟",
         "question_en": "Who developed Elden Ring?",
@@ -117,7 +95,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "أي لعبة تجمع بين كرة القدم والسيارات؟",
         "question_en": "Which game combines soccer and cars?",
@@ -135,7 +112,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "من مطور Valorant؟",
         "question_en": "Who developed Valorant?",
@@ -153,7 +129,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "أي لعبة تدور أحداثها في الغرب الأمريكي؟",
         "question_en": "Which game is set in the American frontier?",
@@ -171,7 +146,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "من مطور Brawl Stars؟",
         "question_en": "Who developed Brawl Stars?",
@@ -189,7 +163,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "أي لعبة تعتبر منصة لصناعة ولعب تجارب مختلفة؟",
         "question_en": "Which game is a platform for creating and playing experiences?",
@@ -207,7 +180,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "من مطور Overwatch؟",
         "question_en": "Who developed Overwatch?",
@@ -225,7 +197,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "أي لعبة صدرت في عام 2022؟",
         "question_en": "Which game was released in 2022?",
@@ -243,7 +214,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "من مطور Fortnite؟",
         "question_en": "Who developed Fortnite?",
@@ -261,7 +231,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "أي لعبة طورتها Supercell؟",
         "question_en": "Which game was developed by Supercell?",
@@ -279,7 +248,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "من مطور Red Dead Redemption 2؟",
         "question_en": "Who developed Red Dead Redemption 2?",
@@ -297,7 +265,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "أي لعبة تحتوي على شخصيات Agents بقدرات مختلفة؟",
         "question_en": "Which game features Agents with different abilities?",
@@ -315,7 +282,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "من مطور Genshin Impact؟",
         "question_en": "Who developed Genshin Impact?",
@@ -333,7 +299,6 @@ quiz_questions = [
         ],
         "correct": 0,
     },
-
     {
         "question_ar": "أي لعبة تشتهر بالبناء والبقاء في عالم مفتوح؟",
         "question_en": "Which game is famous for building and survival in an open world?",
@@ -352,77 +317,75 @@ quiz_questions = [
         "correct": 0,
     },
 ]
-
-
 # =========================================================
 # اللغة
 # =========================================================
-
 def get_language(context):
-
     return context.user_data.get(
         "language",
         "ar",
     )
-
-
 # =========================================================
 # اختيار سؤال
 # =========================================================
-
 def get_quiz_question(context):
-
     previous = context.user_data.get(
         "quiz_question"
     )
-
     choices = list(
         range(len(quiz_questions))
     )
-
     if (
         previous is not None
         and len(choices) > 1
     ):
         choices.remove(previous)
-
     index = random.choice(choices)
-
     context.user_data[
         "quiz_question"
     ] = index
-
     return quiz_questions[index]
-
-
 # =========================================================
-# شكل أزرار الإجابات
+# خلط الإجابات
 # =========================================================
-
 def quiz_markup(
     question,
     language,
+    context,
 ):
-
     answers = (
         question["answers_ar"]
         if language == "ar"
         else question["answers_en"]
     )
-
+    # نحفظ رقم الإجابة الأصلي مع النص
+    options = list(
+        enumerate(answers)
+    )
+    # خلط الخيارات
+    random.shuffle(options)
+    # نحفظ الترتيب حتى نعرف الإجابة الصحيحة
+    # عندما يضغط المستخدم على أحد الأزرار
+    context.user_data[
+        "quiz_options"
+    ] = [
+        original_index
+        for original_index, answer
+        in options
+    ]
     keyboard = []
-
-    for index, answer in enumerate(
-        answers
-    ):
-
+    for display_index, (
+        original_index,
+        answer,
+    ) in enumerate(options):
         keyboard.append([
             InlineKeyboardButton(
-                f"{chr(65 + index)}) {answer}",
-                callback_data=f"quiz_answer_{index}",
+                f"{chr(65 + display_index)}) {answer}",
+                callback_data=(
+                    f"quiz_answer_{display_index}"
+                ),
             )
         ])
-
     keyboard.append([
         InlineKeyboardButton(
             "🔙 رجوع"
@@ -431,59 +394,44 @@ def quiz_markup(
             callback_data="back",
         )
     ])
-
     return InlineKeyboardMarkup(
         keyboard
     )
-
-
 # =========================================================
 # نص السؤال
 # =========================================================
-
 def quiz_question_text(
     question,
     language,
 ):
-
     if language == "ar":
-
         return (
             "🧠 *تحدي الألعاب*\n\n"
             "🎯 جاوب على السؤال:\n\n"
             f"❓ {question['question_ar']}\n\n"
             "⭐ الإجابة الصحيحة = +10 XP"
         )
-
     return (
         "🧠 *Game Challenge*\n\n"
         "🎯 Answer the question:\n\n"
         f"❓ {question['question_en']}\n\n"
         "⭐ Correct answer = +10 XP"
     )
-
-
 # =========================================================
 # بدء التحدي
 # =========================================================
-
 async def quiz_start(
     update,
     context,
 ):
-
     query = update.callback_query
-
     await query.answer()
-
     language = get_language(
         context
     )
-
     question = get_quiz_question(
         context
     )
-
     await query.edit_message_text(
         quiz_question_text(
             question,
@@ -493,22 +441,17 @@ async def quiz_start(
         reply_markup=quiz_markup(
             question,
             language,
+            context,
         ),
     )
-
-
 # =========================================================
 # الحصول على نقاط اللاعب
 # =========================================================
-
 def get_quiz_score(
     user_id,
 ):
-
     with get_db_connection() as conn:
-
         with conn.cursor() as cur:
-
             cur.execute("""
                 SELECT *
                 FROM quiz_scores
@@ -516,12 +459,9 @@ def get_quiz_score(
             """, (
                 user_id,
             ))
-
             row = cur.fetchone()
-
             if row:
                 return row
-
             cur.execute("""
                 INSERT INTO quiz_scores
                 (
@@ -538,28 +478,18 @@ def get_quiz_score(
             """, (
                 user_id,
             ))
-
             row = cur.fetchone()
-
         conn.commit()
-
     return row
-
-
 # =========================================================
 # تحديث النقاط
 # =========================================================
-
 def update_quiz_score(
     user,
     correct,
 ):
-
     with get_db_connection() as conn:
-
         with conn.cursor() as cur:
-
-            # نجيب البيانات الحالية أولًا
             cur.execute("""
                 SELECT
                     xp,
@@ -573,19 +503,14 @@ def update_quiz_score(
             """, (
                 user.id,
             ))
-
             current = cur.fetchone()
-
             if not current:
-
                 old_xp = 0
                 old_correct = 0
                 old_wrong = 0
                 old_best = 0
                 old_streak = 0
-
             else:
-
                 old_xp = current["xp"]
                 old_correct = current[
                     "correct_answers"
@@ -599,29 +524,21 @@ def update_quiz_score(
                 old_streak = current[
                     "current_streak"
                 ]
-
             if correct:
-
                 new_xp = old_xp + 10
                 new_correct = old_correct + 1
                 new_wrong = old_wrong
-
                 new_streak = old_streak + 1
-
                 new_best = max(
                     old_best,
                     new_streak,
                 )
-
             else:
-
                 new_xp = old_xp
                 new_correct = old_correct
                 new_wrong = old_wrong + 1
-
                 new_streak = 0
                 new_best = old_best
-
             cur.execute("""
                 INSERT INTO quiz_scores
                 (
@@ -639,7 +556,6 @@ def update_quiz_score(
                     %s, %s, %s, %s,
                     %s, %s, %s, %s
                 )
-
                 ON CONFLICT (user_id)
                 DO UPDATE SET
                     username = EXCLUDED.username,
@@ -659,9 +575,7 @@ def update_quiz_score(
                 new_best,
                 new_streak,
             ))
-
         conn.commit()
-
     return {
         "xp": new_xp,
         "correct_answers": new_correct,
@@ -669,77 +583,80 @@ def update_quiz_score(
         "best_streak": new_best,
         "current_streak": new_streak,
     }
-
-
 # =========================================================
 # الإجابة
 # =========================================================
-
 async def quiz_answer(
     update,
     context,
 ):
-
     query = update.callback_query
-
     await query.answer()
-
     user = update.effective_user
-
     if not user:
         return
-
     language = get_language(
         context
     )
-
     question_index = context.user_data.get(
         "quiz_question"
     )
-
     if question_index is None:
-
         await quiz_start(
             update,
             context,
         )
-
         return
-
     question = quiz_questions[
         question_index
     ]
-
     try:
-
-        selected = int(
+        selected_display_index = int(
             query.data.replace(
                 "quiz_answer_",
                 "",
             )
         )
-
     except ValueError:
-
         return
-
+    # ترتيب الإجابات الذي تم حفظه عند عرض السؤال
+    options = context.user_data.get(
+        "quiz_options"
+    )
+    if not options:
+        await quiz_start(
+            update,
+            context,
+        )
+        return
+    if (
+        selected_display_index < 0
+        or selected_display_index >= len(options)
+    ):
+        return
+    # نحول رقم الزر إلى رقم الإجابة الأصلي
+    selected_original_index = options[
+        selected_display_index
+    ]
     correct_index = question[
         "correct"
     ]
-
     is_correct = (
-        selected == correct_index
+        selected_original_index
+        == correct_index
     )
-
+    # نحذف ترتيب الإجابات حتى لا يمكن
+    # استخدام نفس السؤال/الزر أكثر من مرة
+    context.user_data.pop(
+        "quiz_options",
+        None,
+    )
     score = update_quiz_score(
         user,
         is_correct,
     )
-
     if is_correct:
-
         if language == "ar":
-
             message = (
                 "🎉 *إجابة صحيحة!*\n\n"
                 "⭐ +10 XP\n"
@@ -748,9 +665,7 @@ async def quiz_answer(
                 f"🏆 مجموع XP: "
                 f"{score['xp']}"
             )
-
         else:
-
             message = (
                 "🎉 *Correct answer!*\n\n"
                 "⭐ +10 XP\n"
@@ -759,9 +674,7 @@ async def quiz_answer(
                 f"🏆 Total XP: "
                 f"{score['xp']}"
             )
-
     else:
-
         correct_answer = (
             question["answers_ar"][
                 correct_index
@@ -772,9 +685,7 @@ async def quiz_answer(
                 correct_index
             ]
         )
-
         if language == "ar":
-
             message = (
                 "❌ *إجابة خاطئة!*\n\n"
                 f"✅ الإجابة الصحيحة: "
@@ -783,9 +694,7 @@ async def quiz_answer(
                 f"🏆 مجموع XP: "
                 f"{score['xp']}"
             )
-
         else:
-
             message = (
                 "❌ *Wrong answer!*\n\n"
                 f"✅ Correct answer: "
@@ -794,9 +703,7 @@ async def quiz_answer(
                 f"🏆 Total XP: "
                 f"{score['xp']}"
             )
-
     keyboard = [
-
         [
             InlineKeyboardButton(
                 "🧠 سؤال آخر"
@@ -805,7 +712,6 @@ async def quiz_answer(
                 callback_data="quiz_start",
             )
         ],
-
         [
             InlineKeyboardButton(
                 "🏆 إحصائياتي"
@@ -814,7 +720,6 @@ async def quiz_answer(
                 callback_data="quiz_stats",
             )
         ],
-
         [
             InlineKeyboardButton(
                 "🔙 رجوع"
@@ -823,9 +728,7 @@ async def quiz_answer(
                 callback_data="back",
             )
         ],
-
     ]
-
     await query.edit_message_text(
         message,
         parse_mode="Markdown",
@@ -833,34 +736,24 @@ async def quiz_answer(
             keyboard
         ),
     )
-
-
 # =========================================================
 # إحصائيات اللاعب
 # =========================================================
-
 async def quiz_stats(
     update,
     context,
 ):
-
     query = update.callback_query
-
     await query.answer()
-
     user = update.effective_user
-
     if not user:
         return
-
     language = get_language(
         context
     )
-
     score = get_quiz_score(
         user.id
     )
-
     xp = score["xp"]
     correct = score[
         "correct_answers"
@@ -874,14 +767,10 @@ async def quiz_stats(
     current = score[
         "current_streak"
     ]
-
     level = (xp // 50) + 1
-
     xp_in_level = xp % 50
     xp_remaining = 50 - xp_in_level
-
     if language == "ar":
-
         text = (
             "🏆 *إحصائيات تحدي الألعاب*\n\n"
             f"⭐ XP: {xp}\n"
@@ -893,9 +782,7 @@ async def quiz_stats(
             f"🎯 تحتاج {xp_remaining} XP "
             "للمستوى التالي."
         )
-
     else:
-
         text = (
             "🏆 *Game Challenge Stats*\n\n"
             f"⭐ XP: {xp}\n"
@@ -907,9 +794,7 @@ async def quiz_stats(
             f"🎯 You need {xp_remaining} XP "
             "for the next level."
         )
-
     keyboard = [
-
         [
             InlineKeyboardButton(
                 "🧠 سؤال آخر"
@@ -918,7 +803,6 @@ async def quiz_stats(
                 callback_data="quiz_start",
             )
         ],
-
         [
             InlineKeyboardButton(
                 "🔙 رجوع"
@@ -927,9 +811,7 @@ async def quiz_stats(
                 callback_data="back",
             )
         ],
-
     ]
-
     await query.edit_message_text(
         text,
         parse_mode="Markdown",
@@ -937,28 +819,96 @@ async def quiz_stats(
             keyboard
         ),
     )
-
-
+# =========================================================
+# إشعار الأدمن بمستخدم جديد
+# =========================================================
+def is_user_already_registered(user_id):
+    with get_db_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT user_id
+                FROM users
+                WHERE user_id = %s
+            """, (
+                user_id,
+            ))
+            return cur.fetchone() is not None
+async def notify_new_user(
+    update,
+    context,
+    language="ar",
+):
+    user = update.effective_user
+    if not user:
+        return False
+    if not ADMIN_ID:
+        print(
+            "⚠️ ADMIN_ID غير موجود، لن يتم إرسال إشعار المستخدم الجديد.",
+            flush=True,
+        )
+        return False
+    try:
+        already_registered = (
+            is_user_already_registered(
+                user.id
+            )
+        )
+        if already_registered:
+            return False
+        username = (
+            f"@{user.username}"
+            if user.username
+            else "بدون Username"
+        )
+        name = (
+            user.first_name
+            or "بدون اسم"
+        )
+        if language == "ar":
+            text = (
+                "🆕 *مستخدم جديد!*\n\n"
+                f"👤 الاسم: {name}\n"
+                f"🔹 Username: {username}\n"
+                f"🆔 ID: `{user.id}`\n"
+                f"🌍 اللغة: "
+                f"{'العربية' if language == 'ar' else 'English'}"
+            )
+        else:
+            text = (
+                "🆕 *New User!*\n\n"
+                f"👤 Name: {name}\n"
+                f"🔹 Username: {username}\n"
+                f"🆔 ID: `{user.id}`\n"
+                f"🌍 Language: English"
+            )
+        await context.bot.send_message(
+            chat_id=int(ADMIN_ID),
+            text=text,
+            parse_mode="Markdown",
+        )
+        return True
+    except Exception as error:
+        print(
+            f"❌ Failed to notify admin about new user: {error}",
+            flush=True,
+        )
+        return False
 # =========================================================
 # ربط ميزات الملف الثاني بالبوت الأساسي
 # =========================================================
-
 def register_quiz_handlers(app):
-
     app.add_handler(
         CallbackQueryHandler(
             quiz_start,
             pattern=r"^quiz_start$",
         )
     )
-
     app.add_handler(
         CallbackQueryHandler(
             quiz_answer,
             pattern=r"^quiz_answer_[0-3]$",
         )
     )
-
     app.add_handler(
         CallbackQueryHandler(
             quiz_stats,
