@@ -29,7 +29,7 @@ games = {
     "minecraft": {
         "name": "Minecraft",
         "emoji": "⛏️",
-        "rating": "غير محدد",
+        "rating": "9.3/10",
         "ar": {
             "description": "لعبة بناء ومغامرات وبقاء في عالم مفتوح.",
             "developer": "Mojang Studios",
@@ -49,7 +49,7 @@ games = {
     "roblox": {
         "name": "Roblox",
         "emoji": "🎮",
-        "rating": "غير محدد",
+        "rating": "غير متوفر",
         "ar": {
             "description": "منصة ألعاب تتيح للمستخدمين لعب وصناعة تجارب مختلفة.",
             "developer": "Roblox Corporation",
@@ -69,7 +69,7 @@ games = {
     "fortnite": {
         "name": "Fortnite",
         "emoji": "🚌",
-        "rating": "غير محدد",
+        "rating": "7.8/10",
         "ar": {
             "description": "لعبة أونلاين تجمع بين القتال والبناء والاستكشاف.",
             "developer": "Epic Games",
@@ -89,7 +89,7 @@ games = {
     "valorant": {
         "name": "Valorant",
         "emoji": "🎯",
-        "rating": "غير محدد",
+        "rating": "8.0/10",
         "ar": {
             "description": "لعبة تصويب تكتيكية تنافسية تعتمد على الشخصيات والقدرات.",
             "developer": "Riot Games",
@@ -109,7 +109,7 @@ games = {
     "rocketleague": {
         "name": "Rocket League",
         "emoji": "🏎️",
-        "rating": "غير محدد",
+        "rating": "8.5/10",
         "ar": {
             "description": "لعبة رياضية تجمع بين كرة القدم والسيارات السريعة.",
             "developer": "Psyonix",
@@ -129,7 +129,7 @@ games = {
     "brawlstars": {
         "name": "Brawl Stars",
         "emoji": "⭐",
-        "rating": "غير محدد",
+        "rating": "7.2/10",
         "ar": {
             "description": "لعبة أكشن متعددة اللاعبين تضم شخصيات وأنماط لعب مختلفة.",
             "developer": "Supercell",
@@ -154,7 +154,7 @@ games = {
             "grand theft auto v",
             "grand theft auto 5",
         ],
-        "rating": "غير محدد",
+        "rating": "9.7/10",
         "ar": {
             "description": "لعبة أكشن ومغامرات في عالم مفتوح تدور أحداثها في مدينة لوس سانتوس.",
             "developer": "Rockstar Games",
@@ -174,7 +174,7 @@ games = {
     "genshinimpact": {
         "name": "Genshin Impact",
         "emoji": "✨",
-        "rating": "غير محدد",
+        "rating": "8.1/10",
         "ar": {
             "description": "لعبة تقمص أدوار وأكشن بعالم مفتوح مليء بالاستكشاف والشخصيات.",
             "developer": "HoYoverse",
@@ -194,7 +194,7 @@ games = {
     "clashroyale": {
         "name": "Clash Royale",
         "emoji": "👑",
-        "rating": "غير محدد",
+        "rating": "8.5/10",
         "ar": {
             "description": "لعبة استراتيجية في الوقت الحقيقي تجمع بين البطاقات والمعارك متعددة اللاعبين.",
             "developer": "Supercell",
@@ -214,7 +214,7 @@ games = {
     "overwatch": {
         "name": "Overwatch",
         "emoji": "🦸",
-        "rating": "غير محدد",
+        "rating": "9.1/10",
         "ar": {
             "description": "لعبة تصويب جماعية تنافسية تعتمد على شخصيات وقدرات مختلفة.",
             "developer": "Blizzard Entertainment",
@@ -234,7 +234,7 @@ games = {
     "eldenring": {
         "name": "Elden Ring",
         "emoji": "⚔️",
-        "rating": "غير محدد",
+        "rating": "9.6/10",
         "ar": {
             "description": "لعبة أكشن وتقمص أدوار بعالم مفتوح مليء بالاستكشاف والمواجهات.",
             "developer": "FromSoftware",
@@ -251,14 +251,10 @@ games = {
         },
     },
 
-    # =========================
-    # Red Dead Redemption
-    # =========================
-
     "reddeadredemption": {
         "name": "Red Dead Redemption",
         "emoji": "🤠",
-        "rating": "غير محدد",
+        "rating": "9.5/10",
         "series": "red_dead",
         "ar": {
             "description": "لعبة أكشن ومغامرات في عالم مفتوح تدور أحداثها في الغرب الأمريكي.",
@@ -279,7 +275,7 @@ games = {
     "reddeadredemption2": {
         "name": "Red Dead Redemption 2",
         "emoji": "🤠",
-        "rating": "غير محدد",
+        "rating": "9.7/10",
         "series": "red_dead",
         "ar": {
             "description": "مغامرة ملحمية في الغرب الأمريكي تتبع قصة عصابة Van der Linde.",
@@ -304,25 +300,35 @@ GAME_ALIASES = {
     "gta 5": "gtav",
     "grand theft auto v": "gtav",
     "grand theft auto 5": "gtav",
+
     "rdr": "red_dead",
     "red dead": "red_dead",
+
     "red dead redemption": "reddeadredemption",
     "red dead redemption 2": "reddeadredemption2",
+
     "elden ring": "eldenring",
     "overwatch": "overwatch",
 }
 
 
 def normalize_game_name(value: str) -> str:
-    normalized = " ".join(value.strip().casefold().split())
+    normalized = " ".join(
+        value.strip().casefold().split()
+    )
     return normalized.replace("’", "'")
 
 
 def find_game_id(game_name: str) -> str | None:
+
     normalized = normalize_game_name(game_name)
 
     if normalized in GAME_ALIASES:
+
         game_id = GAME_ALIASES[normalized]
+
+        if game_id == "red_dead":
+            return "red_dead"
 
         if game_id in games:
             return game_id
@@ -330,7 +336,12 @@ def find_game_id(game_name: str) -> str | None:
         return None
 
     for game_id, game in games.items():
-        names = [game["name"], game_id, *game.get("aliases", [])]
+
+        names = [
+            game["name"],
+            game_id,
+            *game.get("aliases", []),
+        ]
 
         if normalized in {
             normalize_game_name(name)
@@ -341,22 +352,36 @@ def find_game_id(game_name: str) -> str | None:
     return None
 
 
-def get_language(context: ContextTypes.DEFAULT_TYPE) -> str:
-    return context.user_data.get("language", "ar")
+def get_language(
+    context: ContextTypes.DEFAULT_TYPE,
+) -> str:
+    return context.user_data.get(
+        "language",
+        "ar",
+    )
 
 
 def menu_text(language: str) -> str:
-    if language == "ar":
-        return "🎮 اختر اللعبة التي تريد معرفة معلومات عنها:"
 
-    return "🎮 Choose a game to get information about:"
+    if language == "ar":
+        return (
+            "🎮 اختر اللعبة التي تريد معرفة "
+            "معلومات عنها:"
+        )
+
+    return (
+        "🎮 Choose a game to get "
+        "information about:"
+    )
 
 
 # =========================
 # Main game buttons
 # =========================
 
-def get_game_buttons(language: str) -> InlineKeyboardMarkup:
+def get_game_buttons(
+    language: str,
+) -> InlineKeyboardMarkup:
 
     keyboard = [
         [
@@ -372,7 +397,6 @@ def get_game_buttons(language: str) -> InlineKeyboardMarkup:
         }
     ]
 
-    # Red Dead كقسم واحد
     keyboard.append(
         [
             InlineKeyboardButton(
@@ -383,6 +407,7 @@ def get_game_buttons(language: str) -> InlineKeyboardMarkup:
     )
 
     if language == "ar":
+
         keyboard.extend(
             [
                 [
@@ -407,6 +432,7 @@ def get_game_buttons(language: str) -> InlineKeyboardMarkup:
         )
 
     else:
+
         keyboard.extend(
             [
                 [
@@ -433,9 +459,15 @@ def get_game_buttons(language: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
-def back_markup(language: str) -> InlineKeyboardMarkup:
+def back_markup(
+    language: str,
+) -> InlineKeyboardMarkup:
 
-    label = "🔙 رجوع" if language == "ar" else "🔙 Back"
+    label = (
+        "🔙 رجوع"
+        if language == "ar"
+        else "🔙 Back"
+    )
 
     return InlineKeyboardMarkup(
         [
@@ -462,24 +494,37 @@ def game_info_text(
     info = game[language]
 
     if language == "ar":
+
         return (
             f"{game['emoji']} *{game['name']}*\n\n"
-            f"📖 *الوصف:*\n{info['description']}\n\n"
-            f"👨‍💻 *المطور:*\n{info['developer']}\n\n"
-            f"📅 *تاريخ الإصدار:*\n{info['release']}\n\n"
-            f"🎯 *النوع:*\n{info['genre']}\n\n"
-            f"💻 *المنصات:*\n{info['platforms']}\n\n"
-            f"⭐ *التقييم:*\n{game['rating']}"
+            f"📖 *الوصف:*\n"
+            f"{info['description']}\n\n"
+            f"👨‍💻 *المطور:*\n"
+            f"{info['developer']}\n\n"
+            f"📅 *تاريخ الإصدار:*\n"
+            f"{info['release']}\n\n"
+            f"🎯 *النوع:*\n"
+            f"{info['genre']}\n\n"
+            f"💻 *المنصات:*\n"
+            f"{info['platforms']}\n\n"
+            f"⭐ *تقييم النقاد:*\n"
+            f"{game['rating']}"
         )
 
     return (
         f"{game['emoji']} *{game['name']}*\n\n"
-        f"📖 *Description:*\n{info['description']}\n\n"
-        f"👨‍💻 *Developer:*\n{info['developer']}\n\n"
-        f"📅 *Release Date:*\n{info['release']}\n\n"
-        f"🎯 *Genre:*\n{info['genre']}\n\n"
-        f"💻 *Platforms:*\n{info['platforms']}\n\n"
-        f"⭐ *Rating:*\n{game['rating']}"
+        f"📖 *Description:*\n"
+        f"{info['description']}\n\n"
+        f"👨‍💻 *Developer:*\n"
+        f"{info['developer']}\n\n"
+        f"📅 *Release Date:*\n"
+        f"{info['release']}\n\n"
+        f"🎯 *Genre:*\n"
+        f"{info['genre']}\n\n"
+        f"💻 *Platforms:*\n"
+        f"{info['platforms']}\n\n"
+        f"⭐ *Critics Score:*\n"
+        f"{game['rating']}"
     )
 
 
@@ -488,6 +533,7 @@ def game_info_text(
 # =========================
 
 def get_discoverable_games():
+
     return [
         game_id
         for game_id in games
@@ -512,15 +558,20 @@ def choose_random_game(
         previous_game in available_games
         and len(available_games) > 1
     ):
+
         available_games = [
             game_id
             for game_id in available_games
             if game_id != previous_game
         ]
 
-    game_id = random.choice(available_games)
+    game_id = random.choice(
+        available_games
+    )
 
-    context.user_data["discovered_game"] = game_id
+    context.user_data[
+        "discovered_game"
+    ] = game_id
 
     return game_id
 
@@ -534,12 +585,13 @@ def discover_text(
     info = game[language]
 
     if language == "ar":
+
         return (
             "🎲 *اختيار عشوائي لك!*\n\n"
             f"{game['emoji']} *{game['name']}*\n\n"
             f"🎯 *النوع:* {info['genre']}\n"
             f"💻 *المنصات:* {info['platforms']}\n"
-            f"⭐ *التقييم:* {game['rating']}\n\n"
+            f"⭐ *تقييم النقاد:* {game['rating']}\n\n"
             "✨ يمكن تكون لعبتك القادمة!"
         )
 
@@ -548,7 +600,7 @@ def discover_text(
         f"{game['emoji']} *{game['name']}*\n\n"
         f"🎯 *Genre:* {info['genre']}\n"
         f"💻 *Platforms:* {info['platforms']}\n"
-        f"⭐ *Rating:* {game['rating']}\n\n"
+        f"⭐ *Critics Score:* {game['rating']}\n\n"
         "✨ Maybe this could be your next game!"
     )
 
@@ -558,10 +610,13 @@ def discover_markup(
 ) -> InlineKeyboardMarkup:
 
     if language == "ar":
+
         new_game = "🔄 لعبة ثانية"
         info = "📖 معلومات اللعبة"
         back = "🔙 رجوع"
+
     else:
+
         new_game = "🔄 Another Game"
         info = "📖 Game Information"
         back = "🔙 Back"
@@ -601,12 +656,19 @@ async def discover_game(
 
     language = get_language(context)
 
-    game_id = choose_random_game(context)
+    game_id = choose_random_game(
+        context
+    )
 
     await query.edit_message_text(
-        discover_text(game_id, language),
+        discover_text(
+            game_id,
+            language,
+        ),
         parse_mode="Markdown",
-        reply_markup=discover_markup(language),
+        reply_markup=discover_markup(
+            language
+        ),
     )
 
 
@@ -625,13 +687,23 @@ async def discover_info(
         "discovered_game"
     )
 
-    if not game_id or game_id not in games:
-        game_id = choose_random_game(context)
+    if (
+        not game_id
+        or game_id not in games
+    ):
+        game_id = choose_random_game(
+            context
+        )
 
     await query.edit_message_text(
-        game_info_text(game_id, language),
+        game_info_text(
+            game_id,
+            language,
+        ),
         parse_mode="Markdown",
-        reply_markup=back_markup(language),
+        reply_markup=back_markup(
+            language
+        ),
     )
 
 
@@ -643,23 +715,28 @@ def red_dead_markup(
     language: str,
 ) -> InlineKeyboardMarkup:
 
-    if language == "ar":
-        back = "🔙 رجوع"
-    else:
-        back = "🔙 Back"
+    back = (
+        "🔙 رجوع"
+        if language == "ar"
+        else "🔙 Back"
+    )
 
     return InlineKeyboardMarkup(
         [
             [
                 InlineKeyboardButton(
                     "🤠 Red Dead Redemption",
-                    callback_data="reddeadredemption",
+                    callback_data=(
+                        "reddeadredemption"
+                    ),
                 )
             ],
             [
                 InlineKeyboardButton(
                     "🤠 Red Dead Redemption 2",
-                    callback_data="reddeadredemption2",
+                    callback_data=(
+                        "reddeadredemption2"
+                    ),
                 )
             ],
             [
@@ -684,14 +761,25 @@ async def red_dead_menu(
     language = get_language(context)
 
     if language == "ar":
-        text = "🤠 *Red Dead*\n\nأي لعبة تقصد؟"
+
+        text = (
+            "🤠 *Red Dead*\n\n"
+            "أي لعبة تقصد؟"
+        )
+
     else:
-        text = "🤠 *Red Dead*\n\nWhich game do you mean?"
+
+        text = (
+            "🤠 *Red Dead*\n\n"
+            "Which game do you mean?"
+        )
 
     await query.edit_message_text(
         text,
         parse_mode="Markdown",
-        reply_markup=red_dead_markup(language),
+        reply_markup=red_dead_markup(
+            language
+        ),
     )
 
 
@@ -702,8 +790,10 @@ async def red_dead_menu(
 def get_db_connection():
 
     if not DATABASE_URL:
+
         raise RuntimeError(
-            "DATABASE_URL غير موجود في Render Environment"
+            "DATABASE_URL غير موجود "
+            "في Render Environment"
         )
 
     return psycopg.connect(
@@ -767,7 +857,9 @@ def register_user(
     if not user:
         return
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(
+        timezone.utc
+    )
 
     try:
 
@@ -809,7 +901,8 @@ def register_user(
     except Exception as error:
 
         print(
-            f"❌ Database error while registering user: {error}",
+            "❌ Database error while "
+            f"registering user: {error}",
             flush=True,
         )
 
@@ -840,7 +933,9 @@ def update_user_language(
                     """,
                     (
                         language,
-                        datetime.now(timezone.utc),
+                        datetime.now(
+                            timezone.utc
+                        ),
                         user.id,
                     ),
                 )
@@ -850,7 +945,8 @@ def update_user_language(
     except Exception as error:
 
         print(
-            f"❌ Database error while updating user language: {error}",
+            "❌ Database error while "
+            f"updating user language: {error}",
             flush=True,
         )
 
@@ -871,11 +967,15 @@ async def stats_command(
 
     if (
         not ADMIN_ID
-        or str(user.id) != str(ADMIN_ID).strip()
+        or str(user.id)
+        != str(ADMIN_ID).strip()
     ):
+
         await update.message.reply_text(
-            "❌ You are not authorized to use this command."
+            "❌ You are not authorized "
+            "to use this command."
         )
+
         return
 
     try:
@@ -947,12 +1047,14 @@ async def stats_command(
     except Exception as error:
 
         print(
-            f"❌ Database error while loading stats: {error}",
+            "❌ Database error while "
+            f"loading stats: {error}",
             flush=True,
         )
 
         await update.message.reply_text(
-            "❌ حدث خطأ أثناء قراءة الإحصائيات."
+            "❌ حدث خطأ أثناء قراءة "
+            "الإحصائيات."
         )
 
         return
@@ -965,6 +1067,7 @@ async def stats_command(
         )
 
         if latest["username"]:
+
             latest_name += (
                 f" (@{latest['username']})"
             )
@@ -977,11 +1080,15 @@ async def stats_command(
         "📊 إحصائيات البوت\n\n"
         f"👥 إجمالي المستخدمين: {total}\n"
         f"🆕 الجدد اليوم: {today}\n"
-        f"📈 الجدد خلال 7 أيام: {last_7_days}\n\n"
-        f"👤 آخر مستخدم جديد:\n{latest_name}"
+        f"📈 الجدد خلال 7 أيام: "
+        f"{last_7_days}\n\n"
+        f"👤 آخر مستخدم جديد:\n"
+        f"{latest_name}"
     )
 
-    await update.message.reply_text(message)
+    await update.message.reply_text(
+        message
+    )
 
 
 # =========================
@@ -1001,14 +1108,17 @@ def register_game_request(
     if find_game_id(game_name):
 
         if language == "ar":
+
             return (
                 False,
-                "✅ هذه اللعبة متوفرة بالفعل في البوت.",
+                "✅ هذه اللعبة متوفرة بالفعل "
+                "في البوت.",
             )
 
         return (
             False,
-            "✅ This game is already available in the bot.",
+            "✅ This game is already "
+            "available in the bot.",
         )
 
     user = update.effective_user
@@ -1040,7 +1150,9 @@ def register_game_request(
                     user.id if user else None,
                     user.username if user else None,
                     language,
-                    datetime.now(timezone.utc),
+                    datetime.now(
+                        timezone.utc
+                    ),
                 ),
             )
 
@@ -1050,13 +1162,15 @@ def register_game_request(
 
         return (
             True,
-            f'✅ تم استلام طلبك بإضافة "{game_name}".\n'
+            f'✅ تم استلام طلبك بإضافة '
+            f'"{game_name}".\n'
             "شكرًا على اقتراحك! ❤️",
         )
 
     return (
         True,
-        f'✅ Your request for "{game_name}" has been received.\n'
+        f'✅ Your request for '
+        f'"{game_name}" has been received.\n'
         "Thank you for your suggestion! ❤️",
     )
 
@@ -1077,11 +1191,15 @@ async def requests_command(
 
     if (
         not ADMIN_ID
-        or str(user.id) != str(ADMIN_ID).strip()
+        or str(user.id)
+        != str(ADMIN_ID).strip()
     ):
+
         await update.message.reply_text(
-            "❌ You are not authorized to use this command."
+            "❌ You are not authorized "
+            "to use this command."
         )
+
         return
 
     try:
@@ -1109,12 +1227,14 @@ async def requests_command(
     except Exception as error:
 
         print(
-            f"❌ Database error while loading requests: {error}",
+            "❌ Database error while "
+            f"loading requests: {error}",
             flush=True,
         )
 
         await update.message.reply_text(
-            "❌ حدث خطأ أثناء قراءة طلبات الألعاب."
+            "❌ حدث خطأ أثناء قراءة "
+            "طلبات الألعاب."
         )
 
         return
@@ -1146,14 +1266,20 @@ async def requests_command(
         total += count
 
         if count == 1:
+
             request_word = "طلب"
+
         elif count == 2:
+
             request_word = "طلبان"
+
         else:
+
             request_word = "طلبات"
 
         lines.append(
-            f"{index}. 🎮 {item['game_name']} — "
+            f"{index}. 🎮 "
+            f"{item['game_name']} — "
             f"{count} {request_word}"
         )
 
@@ -1184,6 +1310,7 @@ async def requests_command(
             + 1
             > 3900
         ):
+
             await update.message.reply_text(
                 current
             )
@@ -1288,7 +1415,9 @@ async def choose_language(
         "",
     )
 
-    context.user_data["language"] = language
+    context.user_data[
+        "language"
+    ] = language
 
     update_user_language(
         update,
@@ -1355,17 +1484,21 @@ def prompt_text(
     if mode == "search":
 
         return (
-            "🔎 اكتب اسم اللعبة التي تريد البحث عنها:"
+            "🔎 اكتب اسم اللعبة التي تريد "
+            "البحث عنها:"
             if language == "ar"
             else
-            "🔎 Enter the name of the game you want to search for:"
+            "🔎 Enter the name of the game "
+            "you want to search for:"
         )
 
     return (
-        "🎮 اكتب اسم اللعبة التي تريد إضافتها:"
+        "🎮 اكتب اسم اللعبة التي تريد "
+        "إضافتها:"
         if language == "ar"
         else
-        "🎮 Enter the name of the game you want to request:"
+        "🎮 Enter the name of the game "
+        "you want to request:"
     )
 
 
@@ -1380,7 +1513,9 @@ async def begin_search(
 
     language = get_language(context)
 
-    context.user_data["input_mode"] = "search"
+    context.user_data[
+        "input_mode"
+    ] = "search"
 
     await query.edit_message_text(
         prompt_text(
@@ -1404,7 +1539,9 @@ async def begin_request(
 
     language = get_language(context)
 
-    context.user_data["input_mode"] = "request"
+    context.user_data[
+        "input_mode"
+    ] = "request"
 
     await query.edit_message_text(
         prompt_text(
@@ -1478,9 +1615,12 @@ async def handle_text(
         or not update.message
         or not update.message.text
     ):
+
         return
 
-    game_name = update.message.text.strip()
+    game_name = (
+        update.message.text.strip()
+    )
 
     language = get_language(context)
 
@@ -1516,12 +1656,14 @@ async def handle_text(
         if game_id == "red_dead":
 
             await update.message.reply_text(
-                "🤠 *Red Dead*\n\n"
-                "أي لعبة تقصد؟"
-                if language == "ar"
-                else
-                "🤠 *Red Dead*\n\n"
-                "Which game do you mean?",
+                (
+                    "🤠 *Red Dead*\n\n"
+                    "أي لعبة تقصد؟"
+                    if language == "ar"
+                    else
+                    "🤠 *Red Dead*\n\n"
+                    "Which game do you mean?"
+                ),
                 parse_mode="Markdown",
                 reply_markup=red_dead_markup(
                     language
@@ -1648,7 +1790,8 @@ def main():
     if not DATABASE_URL:
 
         print(
-            "❌ DATABASE_URL غير موجود في Render Environment",
+            "❌ DATABASE_URL غير موجود "
+            "في Render Environment",
             flush=True,
         )
 
