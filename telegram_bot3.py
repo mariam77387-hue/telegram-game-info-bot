@@ -79,13 +79,11 @@ def new_main_menu(language="ar"):
         )
     ])
     
-    # فاصل بصري
-    keyboard.append([
-        InlineKeyboardButton(
-            "━━━━━━━━━━━━",
-            callback_data="noop",
-        )
-    ])
+    # فاصل بصري (بحذفه عشان ما يحتاج handler)
+    # keyboard.append([
+    #     InlineKeyboardButton("━━━━━━━━━━━━", callback_data="noop")
+    # ])
+    # ملاحظة: حذفته لأن ما يحتاج فاصل، القائمة مرتبة كفاية
     
     # الأدوات - callback_data تطابق الـ handlers في telegram_bot.py
     if language == "ar":
