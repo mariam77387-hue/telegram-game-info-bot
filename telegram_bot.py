@@ -26,6 +26,16 @@ from telegram_bot2 import (
     register_quiz_handlers,
 )
 
+# =========================================================
+# استيراد القائمة الجديدة من telegram_bot3.py
+# =========================================================
+
+from telegram_bot3 import (
+    main_menu_text as bot3_menu_text,
+    new_main_menu as bot3_main_menu,
+    register_bot3_handlers,
+)
+
 
 # =========================================================
 # الإعدادات
@@ -1412,11 +1422,15 @@ async def send_menu(
         None,
     )
 
+    # استخدام القائمة الجديدة من telegram_bot3.py
     if update.callback_query:
 
         await update.callback_query.edit_message_text(
-            menu_text(language),
-            reply_markup=get_game_buttons(
+            bot3_menu_text(
+                language
+            ),
+            parse_mode="Markdown",
+            reply_markup=bot3_main_menu(
                 language
             ),
         )
@@ -1424,8 +1438,11 @@ async def send_menu(
     else:
 
         await update.message.reply_text(
-            menu_text(language),
-            reply_markup=get_game_buttons(
+            bot3_menu_text(
+                language
+            ),
+            parse_mode="Markdown",
+            reply_markup=bot3_main_menu(
                 language
             ),
         )
@@ -1956,6 +1973,14 @@ def main():
     # =====================================================
 
     register_quiz_handlers(
+        app
+    )
+
+    # =====================================================
+    # القائمة الجديدة من telegram_bot3.py
+    # =====================================================
+
+    register_bot3_handlers(
         app
     )
 
