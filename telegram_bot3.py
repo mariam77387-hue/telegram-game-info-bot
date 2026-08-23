@@ -5,15 +5,6 @@
 # =========================================================
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import CallbackQueryHandler
-
-
-# =========================================================
-# اللغة
-# =========================================================
-
-def get_language(context):
-    return context.user_data.get("language", "ar")
 
 
 # =========================================================
@@ -33,12 +24,11 @@ def main_menu_text(language="ar"):
 
 
 # =========================================================
-# القائمة الرئيسية - 3 أعمدة
+# القائمة الرئيسية - 3 ألعاب في كل صف
 # =========================================================
 
 def new_main_menu(language="ar"):
     
-    # قائمة الألعاب (11 لعبة)
     game_list = [
         ("minecraft", "⛏️", "Minecraft"),
         ("roblox", "🎮", "Roblox"),
@@ -56,12 +46,12 @@ def new_main_menu(language="ar"):
     keyboard = []
     row = []
     
-    # 3 أزرار بكل صف
+    # الألعاب - 3 أزرار في كل صف
     for game_id, emoji, name in game_list:
         row.append(
             InlineKeyboardButton(
                 f"{emoji} {name}",
-                callback_data=game_id,  # بدون bot3_ عشان يشتغل مع الـ handler الرئيسي
+                callback_data=game_id,
             )
         )
         if len(row) == 3:
@@ -71,7 +61,7 @@ def new_main_menu(language="ar"):
     if row:
         keyboard.append(row)
     
-    # Red Dead - callback_data يطابق الـ handler في telegram_bot.py
+    # Red Dead
     keyboard.append([
         InlineKeyboardButton(
             "🤠 Red Dead",
@@ -79,13 +69,7 @@ def new_main_menu(language="ar"):
         )
     ])
     
-    # فاصل بصري (بحذفه عشان ما يحتاج handler)
-    # keyboard.append([
-    #     InlineKeyboardButton("━━━━━━━━━━━━", callback_data="noop")
-    # ])
-    # ملاحظة: حذفته لأن ما يحتاج فاصل، القائمة مرتبة كفاية
-    
-    # الأدوات - callback_data تطابق الـ handlers في telegram_bot.py
+    # الأدوات
     if language == "ar":
         keyboard.append([
             InlineKeyboardButton(
@@ -129,27 +113,18 @@ def new_main_menu(language="ar"):
             ),
         ])
     
-    # زر رجوع للقائمة الرئيسية
-    keyboard.append([
-        InlineKeyboardButton(
-            "🏠 القائمة الرئيسية" if language == "ar" else "🏠 Main Menu",
-            callback_data="back",
-        )
-    ])
+    # ملاحظة: حذفت زر "🏠 القائمة الرئيسية" لأنه ما له داعي هنا
     
     return InlineKeyboardMarkup(keyboard)
 
 
 # =========================================================
-# تسجيل Handlers الخاصة بـ Bot 3
+# Handlers
 # =========================================================
 
 def register_bot3_handlers(app):
-    """
-    هذا الملف لا يحتوي handlers إضافية لأن جميع الـ callbacks
-    تستخدم الـ handlers الموجودة في telegram_bot.py
-    """
-    pass  # القائمة تستخدم handlers موجودة في الملف الرئيسي
+    # جميع الـ callbacks تتعامل معها telegram_bot.py
+    pass
 
 
 # =========================================================
@@ -159,7 +134,8 @@ def register_bot3_handlers(app):
 if __name__ == "__main__":
     print("=" * 50)
     print("✅ telegram_bot3.py جاهز")
-    print("🎮 عدد الألعاب: 11 + Red Dead (قائمة فرعية)")
-    print("📐 ترتيب القائمة: 3 أعمدة")
-    print("🔗 جميع الـ callbacks متوافقة مع telegram_bot.py")
+    print("🎮 الألعاب: 11")
+    print("🤠 Red Dead: جاهز")
+    print("📐 القائمة: 3 ألعاب في كل صف")
+    print("🔗 متوافق مع telegram_bot.py")
     print("=" * 50)
