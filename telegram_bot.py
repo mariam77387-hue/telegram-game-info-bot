@@ -1237,85 +1237,6 @@ async def stats_command(
 # طلبات الألعاب
 # =========================================================
 
-def register_game_request(
-    game_name,
-    update,
-    language,
-):
-
-    game_name = " ".join(
-        game_name.strip().split()
-    )
-
-    if find_game_id(
-        game_name
-    ):
-
-        if language == "ar":
-
-            return (
-                False,
-                "✅ هذه اللعبة متوفرة بالفعل في البوت.",
-            )
-
-        return (
-            False,
-            "✅ This game is already available in the bot.",
-        )
-
-    user = update.effective_user
-
-    normalized = normalize_game_name(
-        game_name
-    )
-
-    with get_db_connection() as conn:
-
-        with conn.cursor() as cur:
-
-            cur.execute("""
-                INSERT INTO game_requests
-                (
-                    game_name,
-                    normalized_name,
-                    user_id,
-                    username,
-                    language,
-                    requested_at
-                )
-                VALUES
-                (
-                    %s, %s, %s,
-                    %s, %s, %s
-                )
-            """, (
-                game_name,
-                normalized,
-                user.id if user else None,
-                user.username if user else None,
-                language,
-                datetime.now(
-                    timezone.utc
-                ),
-            ))
-
-        conn.commit()
-
-    if language == "ar":
-
-        return (
-            True,
-            f'✅ تم استلام طلبك بإضافة "{game_name}".\n'
-            "شكرًا على اقتراحك! ❤️",
-        )
-
-    return (
-        True,
-        f'✅ Your request for "{game_name}" has been received.\n'
-        "Thank you for your suggestion! ❤️",
-    )
-
-
 async def requests_command(
     update,
     context,
@@ -1346,14 +1267,12 @@ async def requests_command(
 
                 cur.execute("""
                     SELECT
-                        normalized_name,
-                        MIN(game_name) AS game_name,
-                        COUNT(*) AS request_count
+                        game_name,
+                        username,
+                        user_id,
+                        requested_at
                     FROM game_requests
-                    GROUP BY normalized_name
-                    ORDER BY
-                        request_count DESC,
-                        game_name ASC
+                    ORDER BY requested_at DESC
                 """)
 
                 rows = cur.fetchall()
@@ -1379,49 +1298,71 @@ async def requests_command(
 
         return
 
+    # تجميع الطلبات حسب اسم اللعبة
+    games_requests = {}
+
+    for item in rows:
+
+        game_name = item["game_name"]
+
+        if game_name not in games_requests:
+            games_requests[game_name] = []
+
+        games_requests[game_name].append(item)
+
     lines = [
         "📋 طلبات الألعاب",
         "",
     ]
 
-    total = 0
+    total = len(rows)
 
-    for index, item in enumerate(
-        rows,
+    for index, (game_name, requests) in enumerate(
+        games_requests.items(),
         start=1,
     ):
 
-        count = int(
-            item["request_count"]
-        )
-
-        total += count
+        count = len(requests)
 
         if count == 1:
             request_word = "طلب"
-
         elif count == 2:
             request_word = "طلبان"
-
         else:
             request_word = "طلبات"
 
         lines.append(
-            f"{index}. 🎮 "
-            f"{item['game_name']} — "
+            f"{index}. 🎮 {game_name} — "
             f"{count} {request_word}"
         )
 
+        # أسماء الأشخاص الذين طلبوا اللعبة
+        for request in requests:
+
+            username = request["username"]
+
+            if username:
+                display_name = f"@{username}"
+            else:
+                display_name = (
+                    f"ID: {request['user_id']}"
+                )
+
+            lines.append(
+                f"   👤 {display_name}"
+            )
+
+        lines.append("")
+
     lines.extend([
-        "",
         f"📊 إجمالي الطلبات: {total}",
     ])
 
     await update.message.reply_text(
         "\n".join(lines)[:4000]
     )
-
-
+    
+    
 # =========================================================
 # القائمة
 # =========================================================
