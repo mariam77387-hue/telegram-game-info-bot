@@ -379,9 +379,11 @@ games = {
             "genre": "Action, Adventure, Open World",
             "platforms": "PC, PlayStation, Xbox",
             
+        
         },
-      },
-    }
+    },
+}
+
 def search_game_external(game_name):
     """
     البحث عن لعبة غير موجودة في games
