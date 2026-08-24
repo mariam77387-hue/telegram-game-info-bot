@@ -2021,8 +2021,8 @@ def main():
                 r"^(minecraft|roblox|fortnite|"
                 r"valorant|rocketleague|"
                 r"brawlstars|gtav|genshinimpact|"
-                r"clashroyale|overwatch|eldenring|"
-                r"reddeadredemption|"
+                r"clashroyale|overwatch|eldenring|bloodborne|"
+r"reddeadredemption|"
                 r"reddeadredemption2)$"
             ),
 
