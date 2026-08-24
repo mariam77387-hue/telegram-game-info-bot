@@ -380,9 +380,10 @@ games = {
             "platforms": "PC, PlayStation, Xbox",
             
         
-        },
-    },
-}
+        
+},
+      },
+    }
 
 def search_game_external(game_name):
     """
