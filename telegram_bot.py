@@ -837,7 +837,6 @@ def external_game_info_text(
         f"{game['rating']}\n\n"
         "🌐 Found using an external game database."
     )
-}
 
 
 # =========================================================
