@@ -2,9 +2,8 @@
 
 import os
 import random
-import html
 import requests
-
+import html
 from datetime import datetime, timezone
 
 import psycopg
