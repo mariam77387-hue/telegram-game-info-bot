@@ -1894,6 +1894,10 @@ async def handle_text(
         None,
     )
 
+    # =====================================================
+    # إذا المستخدم لم يكتب اسم لعبة
+    # =====================================================
+
     if not game_name:
 
         await update.message.reply_text(
@@ -1912,11 +1916,23 @@ async def handle_text(
 
         return
 
+    # =====================================================
+    # البحث عن لعبة
+    # =====================================================
+
     if mode == "search":
+
+        # -------------------------------------------------
+        # البحث داخل الألعاب الموجودة في البوت
+        # -------------------------------------------------
 
         game_id = find_game_id(
             game_name
         )
+
+        # -------------------------------------------------
+        # Red Dead
+        # -------------------------------------------------
 
         if game_id == "red_dead":
 
@@ -1935,6 +1951,10 @@ async def handle_text(
 
             return
 
+        # -------------------------------------------------
+        # اللعبة موجودة بالفعل في البوت
+        # -------------------------------------------------
+
         if game_id:
 
             await update.message.reply_text(
@@ -1949,6 +1969,91 @@ async def handle_text(
             )
 
             return
+
+        # =================================================
+        # اللعبة غير موجودة في البوت
+        # نبحث عنها في قاعدة الألعاب الخارجية
+        # =================================================
+
+        external_game = search_game_external(
+            game_name
+        )
+
+        # -------------------------------------------------
+        # وجدنا اللعبة خارج البوت
+        # -------------------------------------------------
+
+        if external_game:
+
+            context.user_data[
+                "pending_game_request"
+            ] = external_game["name"]
+
+            text = external_game_info_text(
+                external_game,
+                language,
+            )
+
+            # إضافة تنبيه للمستخدم بأن اللعبة
+            # ليست موجودة داخل البوت حالياً
+
+            if language == "ar":
+
+                text += (
+                    "\n\n"
+                    "ℹ️ هذه اللعبة غير مضافة إلى قائمة البوت حاليًا.\n"
+                    "يمكنك طلب إضافتها من الزر بالأسفل."
+                )
+
+                request_button = (
+                    f"➕ طلب إضافة {external_game['name']}"
+                )
+
+            else:
+
+                text += (
+                    "\n\n"
+                    "ℹ️ This game is not currently in the bot's list.\n"
+                    "You can request it using the button below."
+                )
+
+                request_button = (
+                    f"➕ Request {external_game['name']}"
+                )
+
+            await update.message.reply_text(
+
+                text,
+
+                parse_mode="Markdown",
+
+                reply_markup=InlineKeyboardMarkup([
+
+                    [
+                        InlineKeyboardButton(
+                            request_button[:60],
+                            callback_data="request_searched_game",
+                        )
+                    ],
+
+                    [
+                        InlineKeyboardButton(
+                            "🔙 رجوع"
+                            if language == "ar"
+                            else "🔙 Back",
+                            callback_data="back",
+                        )
+                    ],
+
+                ]),
+            )
+
+            return
+
+        # =================================================
+        # البحث الخارجي لم يجد اللعبة
+        # نرجع لنظام طلب اللعبة القديم
+        # =================================================
 
         context.user_data[
             "pending_game_request"
@@ -2004,6 +2109,10 @@ async def handle_text(
         )
 
         return
+
+    # =====================================================
+    # وضع طلب لعبة مباشرة
+    # =====================================================
 
     _, message = register_game_request(
         game_name,
