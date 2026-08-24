@@ -311,6 +311,29 @@ games = {
     },
 
 
+"bloodborne": {
+    "name": "Bloodborne",
+    "emoji": "🩸",
+    "rating": "92/100",
+
+    "ar": {
+        "description": "لعبة أكشن وتقمص أدوار بطابع مظلم، تدور أحداثها في مدينة يارنام المليئة بالأسرار والوحوش.",
+        "developer": "FromSoftware",
+        "release": "24 مارس 2015",
+        "genre": "أكشن، تقمص أدوار، رعب",
+        "platforms": "PlayStation 4",
+    },
+
+    "en": {
+        "description": "An action RPG with a dark atmosphere, set in the mysterious city of Yharnam.",
+        "developer": "FromSoftware",
+        "release": "March 24, 2015",
+        "genre": "Action RPG, Horror",
+        "platforms": "PlayStation 4",
+    },
+},
+
+
     "reddeadredemption": {
         "name": "Red Dead Redemption",
         "emoji": "🤠",
