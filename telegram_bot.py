@@ -386,34 +386,46 @@ def search_game_external(game_name):
     """
     البحث عن لعبة غير موجودة في games
     باستخدام RAWG API.
+
+    تبحث عن أقرب نتيجة ثم تجلب معلوماتها الكاملة.
     """
 
     api_key = os.getenv("RAWG_API_KEY")
 
     if not api_key:
+
         print(
             "⚠️ RAWG_API_KEY غير موجود",
             flush=True,
         )
+
         return None
 
     try:
+
+        # =====================================================
+        # البحث عن اللعبة
+        # =====================================================
 
         response = requests.get(
             "https://api.rawg.io/api/games",
             params={
                 "key": api_key,
                 "search": game_name,
-                "page_size": 5,
+                "page_size": 10,
+                "search_precise": "true",
             },
             timeout=10,
         )
 
         if response.status_code != 200:
+
             print(
-                f"❌ RAWG search error: {response.status_code}",
+                f"❌ RAWG search error: "
+                f"{response.status_code}",
                 flush=True,
             )
+
             return None
 
         data = response.json()
@@ -424,14 +436,57 @@ def search_game_external(game_name):
         )
 
         if not results:
+
+            print(
+                f"⚠️ لم يتم العثور على لعبة: {game_name}",
+                flush=True,
+            )
+
             return None
 
-        result = results[0]
+        # =====================================================
+        # اختيار أقرب نتيجة
+        # =====================================================
 
-        rawg_id = result.get("id")
+        normalized_query = (
+            game_name
+            .strip()
+            .lower()
+        )
+
+        selected_result = None
+
+        # تطابق الاسم بشكل مباشر
+        for result in results:
+
+            result_name = (
+                result.get("name")
+                or ""
+            ).strip().lower()
+
+            if result_name == normalized_query:
+
+                selected_result = result
+
+                break
+
+        # إذا لم نجد تطابقًا مباشرًا
+        # نستخدم أول نتيجة مناسبة
+        if not selected_result:
+
+            selected_result = results[0]
+
+        rawg_id = selected_result.get(
+            "id"
+        )
 
         if not rawg_id:
+
             return None
+
+        # =====================================================
+        # جلب التفاصيل الكاملة
+        # =====================================================
 
         details_response = requests.get(
             f"https://api.rawg.io/api/games/{rawg_id}",
@@ -442,14 +497,29 @@ def search_game_external(game_name):
         )
 
         if details_response.status_code != 200:
+
+            print(
+                f"❌ RAWG details error: "
+                f"{details_response.status_code}",
+                flush=True,
+            )
+
             return None
 
         game = details_response.json()
 
-        name = game.get(
-            "name",
-            game_name,
+        # =====================================================
+        # الاسم
+        # =====================================================
+
+        name = (
+            game.get("name")
+            or game_name
         )
+
+        # =====================================================
+        # الوصف
+        # =====================================================
 
         description = (
             game.get("description_raw")
@@ -460,22 +530,72 @@ def search_game_external(game_name):
             description
         )
 
+        # تنظيف المسافات الزائدة
+        description = " ".join(
+            description.split()
+        )
+
+        # =====================================================
+        # المطور
+        # =====================================================
+
         developer_list = game.get(
             "developers",
             [],
         )
 
         developers = [
+
             item.get("name")
+
             for item in developer_list
+
             if item.get("name")
+
         ]
 
         developer = (
+
             "، ".join(developers)
+
             if developers
+
             else "غير محدد"
+
         )
+
+        # =====================================================
+        # الناشر
+        # =====================================================
+
+        publisher_list = game.get(
+            "publishers",
+            [],
+        )
+
+        publishers = [
+
+            item.get("name")
+
+            for item in publisher_list
+
+            if item.get("name")
+
+        ]
+
+        publisher = (
+
+            "، ".join(publishers)
+
+            if publishers
+
+            else "غير محدد"
+
+        )
+
+        # =====================================================
+        # النوع
+        # =====================================================
 
         genres_list = game.get(
             "genres",
@@ -483,62 +603,187 @@ def search_game_external(game_name):
         )
 
         genres = [
+
             item.get("name")
+
             for item in genres_list
+
             if item.get("name")
+
         ]
 
         genre = (
+
             "، ".join(genres)
+
             if genres
+
             else "غير محدد"
+
         )
+
+        # =====================================================
+        # المنصات
+        # =====================================================
 
         platforms_list = game.get(
             "platforms",
             [],
         )
 
-        platforms = [
-            item.get("platform", {}).get("name")
-            for item in platforms_list
-            if item.get("platform", {}).get("name")
-        ]
+        platforms = []
+
+        for item in platforms_list:
+
+            platform = item.get(
+                "platform",
+                {}
+            )
+
+            platform_name = platform.get(
+                "name"
+            )
+
+            if platform_name:
+
+                platforms.append(
+                    platform_name
+                )
 
         platforms_text = (
+
             "، ".join(platforms)
+
             if platforms
+
             else "غير محدد"
+
         )
 
-        release = game.get(
-            "released"
-        ) or "غير محدد"
+        # =====================================================
+        # تاريخ الإصدار
+        # =====================================================
+
+        release = (
+            game.get("released")
+            or "غير محدد"
+        )
+
+        # =====================================================
+        # تقييم Metacritic
+        # =====================================================
 
         metacritic = game.get(
             "metacritic"
         )
 
-        rating = (
-            f"{metacritic}/100"
-            if metacritic
-            else "غير محدد"
+        if metacritic is not None:
+
+            rating = (
+                f"{metacritic}/100"
+            )
+
+        else:
+
+            rating = "غير محدد"
+
+        # =====================================================
+        # تقييم RAWG
+        # =====================================================
+
+        rawg_rating = game.get(
+            "rating"
         )
 
+        ratings_count = game.get(
+            "ratings_count"
+        )
+
+        # =====================================================
+        # عدد التقييمات
+        # =====================================================
+
+        if ratings_count is not None:
+
+            ratings_count_text = str(
+                ratings_count
+            )
+
+        else:
+
+            ratings_count_text = "غير محدد"
+
+        # =====================================================
+        # رابط اللعبة في RAWG
+        # =====================================================
+
+        rawg_url = game.get(
+            "website"
+        ) or game.get(
+            "slug"
+        )
+
+        # =====================================================
+        # الصورة
+        # =====================================================
+
+        background_image = game.get(
+            "background_image"
+        )
+
+        # =====================================================
+        # النتيجة النهائية
+        # =====================================================
+
         return {
+
             "name": name,
+
             "description": description,
+
             "developer": developer,
+
+            "publisher": publisher,
+
             "release": release,
+
             "genre": genre,
+
             "platforms": platforms_text,
+
             "rating": rating,
+
+            "rawg_rating": (
+                str(rawg_rating)
+                if rawg_rating is not None
+                else "غير محدد"
+            ),
+
+            "ratings_count": (
+                ratings_count_text
+            ),
+
+            "rawg_url": rawg_url,
+
+            "image": background_image,
+
         }
+
+    except requests.RequestException as error:
+
+        print(
+            f"❌ RAWG connection error: "
+            f"{error}",
+            flush=True,
+        )
+
+        return None
 
     except Exception as error:
 
         print(
-            f"❌ External search error: {error}",
+            f"❌ External search error: "
+            f"{error}",
             flush=True,
         )
 
