@@ -378,15 +378,16 @@ games = {
             "release": "October 26, 2018",
             "genre": "Action, Adventure, Open World",
             "platforms": "PC, PlayStation, Xbox",
-        },
+                },
     },
 
 }
 
 def search_game_external(game_name):
-
+    """
     البحث عن لعبة غير موجودة في games
     باستخدام RAWG API.
+    """
 
     تبحث عن أقرب نتيجة ثم تجلب معلوماتها الكاملة.
     """
