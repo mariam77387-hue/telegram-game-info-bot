@@ -378,9 +378,219 @@ games = {
             "release": "October 26, 2018",
             "genre": "Action, Adventure, Open World",
             "platforms": "PC, PlayStation, Xbox",
+            
         },
-    },
+      },
+    
+def search_game_external(game_name):
+    """
+    البحث عن لعبة غير موجودة في games
+    باستخدام RAWG API.
+    """
 
+    api_key = os.getenv("RAWG_API_KEY")
+
+    if not api_key:
+        print(
+            "⚠️ RAWG_API_KEY غير موجود",
+            flush=True,
+        )
+        return None
+
+    try:
+
+        response = requests.get(
+            "https://api.rawg.io/api/games",
+            params={
+                "key": api_key,
+                "search": game_name,
+                "page_size": 5,
+            },
+            timeout=10,
+        )
+
+        if response.status_code != 200:
+            print(
+                f"❌ RAWG search error: {response.status_code}",
+                flush=True,
+            )
+            return None
+
+        data = response.json()
+
+        results = data.get(
+            "results",
+            [],
+        )
+
+        if not results:
+            return None
+
+        result = results[0]
+
+        rawg_id = result.get("id")
+
+        if not rawg_id:
+            return None
+
+        details_response = requests.get(
+            f"https://api.rawg.io/api/games/{rawg_id}",
+            params={
+                "key": api_key,
+            },
+            timeout=10,
+        )
+
+        if details_response.status_code != 200:
+            return None
+
+        game = details_response.json()
+
+        name = game.get(
+            "name",
+            game_name,
+        )
+
+        description = (
+            game.get("description_raw")
+            or "غير متوفر"
+        )
+
+        description = html.unescape(
+            description
+        )
+
+        developer_list = game.get(
+            "developers",
+            [],
+        )
+
+        developers = [
+            item.get("name")
+            for item in developer_list
+            if item.get("name")
+        ]
+
+        developer = (
+            "، ".join(developers)
+            if developers
+            else "غير محدد"
+        )
+
+        genres_list = game.get(
+            "genres",
+            [],
+        )
+
+        genres = [
+            item.get("name")
+            for item in genres_list
+            if item.get("name")
+        ]
+
+        genre = (
+            "، ".join(genres)
+            if genres
+            else "غير محدد"
+        )
+
+        platforms_list = game.get(
+            "platforms",
+            [],
+        )
+
+        platforms = [
+            item.get("platform", {}).get("name")
+            for item in platforms_list
+            if item.get("platform", {}).get("name")
+        ]
+
+        platforms_text = (
+            "، ".join(platforms)
+            if platforms
+            else "غير محدد"
+        )
+
+        release = game.get(
+            "released"
+        ) or "غير محدد"
+
+        metacritic = game.get(
+            "metacritic"
+        )
+
+        rating = (
+            f"{metacritic}/100"
+            if metacritic
+            else "غير محدد"
+        )
+
+        return {
+            "name": name,
+            "description": description,
+            "developer": developer,
+            "release": release,
+            "genre": genre,
+            "platforms": platforms_text,
+            "rating": rating,
+        }
+
+    except Exception as error:
+
+        print(
+            f"❌ External search error: {error}",
+            flush=True,
+        )
+
+        return None
+
+
+def external_game_info_text(
+    game,
+    language,
+):
+    """
+    تجهيز معلومات اللعبة الخارجية
+    بالعربي أو الإنجليزي.
+    """
+
+    if language == "ar":
+
+        return (
+            "🎮 *معلومات اللعبة*\n\n"
+            f"🎮 *{game['name']}*\n\n"
+            f"📝 *الوصف:*\n"
+            f"{game['description']}\n\n"
+            f"👨‍💻 *المطور:* "
+            f"{game['developer']}\n"
+            f"📅 *الإصدار:* "
+            f"{game['release']}\n"
+            f"🎭 *النوع:* "
+            f"{game['genre']}\n"
+            f"🖥️ *المنصات:* "
+            f"{game['platforms']}\n"
+            f"⭐ *التقييم:* "
+            f"{game['rating']}\n\n"
+            "🌐 تم العثور على اللعبة من مصدر خارجي."
+        )
+
+    return (
+        "🎮 *Game Information*\n\n"
+        f"🎮 *{game['name']}*\n\n"
+        f"📝 *Description:*\n"
+        f"{game['description']}\n\n"
+        f"👨‍💻 *Developer:* "
+        f"{game['developer']}\n"
+        f"📅 *Release:* "
+        f"{game['release']}\n"
+        f"🎭 *Genre:* "
+        f"{game['genre']}\n"
+        f"🖥️ *Platforms:* "
+        f"{game['platforms']}\n"
+        f"⭐ *Rating:* "
+        f"{game['rating']}\n\n"
+        "🌐 Found using an external game database."
+    )
 }
 
 
