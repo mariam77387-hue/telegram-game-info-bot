@@ -2433,7 +2433,7 @@ def main():
     # Commands
     # =====================================================
 
-    app.add_handler(
+        app.add_handler(
         CommandHandler(
             "start",
             start,
@@ -2444,6 +2444,13 @@ def main():
         CommandHandler(
             "requests",
             requests_command,
+        )
+    )
+
+    app.add_handler(
+        CallbackQueryHandler(
+            approve_game_request,
+            pattern=r"^approve_request:\d+$",
         )
     )
 
