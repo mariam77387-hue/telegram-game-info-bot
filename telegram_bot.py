@@ -1715,8 +1715,7 @@ async def requests_command(
 
     if (
         not ADMIN_ID
-        or str(user.id)
-        != str(ADMIN_ID).strip()
+        or str(user.id) != str(ADMIN_ID).strip()
     ):
 
         await update.message.reply_text(
@@ -1733,9 +1732,11 @@ async def requests_command(
 
                 cur.execute("""
                     SELECT
+                        id,
                         game_name,
                         username,
                         user_id,
+                        status,
                         requested_at
                     FROM game_requests
                     ORDER BY requested_at DESC
@@ -1764,18 +1765,6 @@ async def requests_command(
 
         return
 
-    # تجميع الطلبات حسب اسم اللعبة
-    games_requests = {}
-
-    for item in rows:
-
-        game_name = item["game_name"]
-
-        if game_name not in games_requests:
-            games_requests[game_name] = []
-
-        games_requests[game_name].append(item)
-
     lines = [
         "📋 طلبات الألعاب",
         "",
@@ -1783,46 +1772,45 @@ async def requests_command(
 
     total = len(rows)
 
-    for index, (game_name, requests) in enumerate(
-        games_requests.items(),
+    for index, item in enumerate(
+        rows,
         start=1,
     ):
 
-        count = len(requests)
+        game_name = item["game_name"]
+        username = item["username"]
+        status = item["status"]
 
-        if count == 1:
-            request_word = "طلب"
-        elif count == 2:
-            request_word = "طلبان"
-        else:
-            request_word = "طلبات"
+        if username:
 
-        lines.append(
-            f"{index}. 🎮 {game_name} — "
-            f"{count} {request_word}"
-        )
-
-        # أسماء الأشخاص الذين طلبوا اللعبة
-        for request in requests:
-
-            username = request["username"]
-
-            if username:
-                display_name = f"@{username}"
-            else:
-                display_name = (
-                    f"ID: {request['user_id']}"
-                )
-
-            lines.append(
-                f"   👤 {display_name}"
+            display_name = (
+                f"@{username}"
             )
 
-        lines.append("")
+        else:
 
-    lines.extend([
-        f"📊 إجمالي الطلبات: {total}",
-    ])
+            display_name = (
+                f"ID: {item['user_id']}"
+            )
+
+        if status == "approved":
+
+            status_text = "🟢 تمت الإضافة"
+
+        else:
+
+            status_text = "🟡 قيد المراجعة"
+
+        lines.extend([
+            f"{index}. 🎮 {game_name}",
+            f"   👤 {display_name}",
+            f"   {status_text}",
+            "",
+        ])
+
+    lines.append(
+        f"📊 إجمالي الطلبات: {total}"
+    )
 
     await update.message.reply_text(
         "\n".join(lines)[:4000]
