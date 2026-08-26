@@ -2518,10 +2518,8 @@ def main():
 
         return
 
-    # قاعدة البيانات الأساسية
     init_database()
 
-    # قاعدة بيانات الاختبار
     init_quiz_database()
 
     app = (
@@ -2530,12 +2528,7 @@ def main():
         .build()
     )
 
-
-    # =====================================================
-    # Commands
-    # =====================================================
-
-        app.add_handler(
+    app.add_handler(
         CommandHandler(
             "start",
             start,
@@ -2551,7 +2544,7 @@ def main():
 
     app.add_handler(
         CallbackQueryHandler(
-            approve_game_request,
+            approve_request,
             pattern=r"^approve_request:\d+$",
         )
     )
@@ -2563,22 +2556,12 @@ def main():
         )
     )
 
-
-    # =====================================================
-    # اللغة
-    # =====================================================
-
     app.add_handler(
         CallbackQueryHandler(
             choose_language,
             pattern=r"^language_(ar|en)$",
         )
     )
-
-
-    # =====================================================
-    # اكتشف لعبة
-    # =====================================================
 
     app.add_handler(
         CallbackQueryHandler(
@@ -2594,11 +2577,6 @@ def main():
         )
     )
 
-
-    # =====================================================
-    # Red Dead
-    # =====================================================
-
     app.add_handler(
         CallbackQueryHandler(
             red_dead_menu,
@@ -2606,49 +2584,27 @@ def main():
         )
     )
 
-
-    # =====================================================
-    # تحدي الألعاب من telegram_bot2.py
-    # =====================================================
-
     register_quiz_handlers(
         app
     )
-
-    # =====================================================
-    # القائمة الجديدة من telegram_bot3.py
-    # =====================================================
 
     register_bot3_handlers(
         app
     )
 
-
-    # =====================================================
-    # الألعاب
-    # =====================================================
-
     app.add_handler(
         CallbackQueryHandler(
-
             show_game,
-
             pattern=(
                 r"^(minecraft|roblox|fortnite|"
                 r"valorant|rocketleague|"
                 r"brawlstars|gtav|genshinimpact|"
                 r"clashroyale|overwatch|eldenring|bloodborne|"
-r"reddeadredemption|"
+                r"reddeadredemption|"
                 r"reddeadredemption2)$"
             ),
-
         )
     )
-
-
-    # =====================================================
-    # البحث
-    # =====================================================
 
     app.add_handler(
         CallbackQueryHandler(
@@ -2657,22 +2613,12 @@ r"reddeadredemption|"
         )
     )
 
-
-    # =====================================================
-    # طلب لعبة
-    # =====================================================
-
     app.add_handler(
         CallbackQueryHandler(
             begin_request,
             pattern=r"^request_game$",
         )
     )
-
-
-    # =====================================================
-    # طلب اللعبة بعد البحث
-    # =====================================================
 
     app.add_handler(
         CallbackQueryHandler(
@@ -2681,11 +2627,6 @@ r"reddeadredemption|"
         )
     )
 
-
-    # =====================================================
-    # رجوع
-    # =====================================================
-
     app.add_handler(
         CallbackQueryHandler(
             back,
@@ -2693,18 +2634,12 @@ r"reddeadredemption|"
         )
     )
 
-
-    # =====================================================
-    # النصوص
-    # =====================================================
-
     app.add_handler(
         MessageHandler(
             filters.TEXT & ~filters.COMMAND,
             handle_text,
         )
     )
-
 
     print(
         "🤖 البوت يعمل الآن...",
