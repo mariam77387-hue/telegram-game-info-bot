@@ -1798,7 +1798,6 @@ async def requests_command(
             "",
         ])
 
-        # زر تغيير الحالة
         if status != "approved":
 
             keyboard.append([
@@ -1818,6 +1817,101 @@ async def requests_command(
         if keyboard
         else None,
     )
+
+
+async def approve_request(
+    update,
+    context,
+):
+
+    query = update.callback_query
+
+    await query.answer()
+
+    user = update.effective_user
+
+    if not user:
+        return
+
+    if (
+        not ADMIN_ID
+        or str(user.id) != str(ADMIN_ID).strip()
+    ):
+
+        await query.answer(
+            "❌ غير مصرح لك.",
+            show_alert=True,
+        )
+
+        return
+
+    try:
+
+        request_id = int(
+            query.data.split(":", 1)[1]
+        )
+
+    except (ValueError, IndexError):
+
+        await query.answer(
+            "❌ طلب غير صالح.",
+            show_alert=True,
+        )
+
+        return
+
+    try:
+
+        with get_db_connection() as conn:
+
+            with conn.cursor() as cur:
+
+                cur.execute("""
+                    UPDATE game_requests
+                    SET status = 'approved'
+                    WHERE id = %s
+                    RETURNING game_name
+                """, (
+                    request_id,
+                ))
+
+                row = cur.fetchone()
+
+            conn.commit()
+
+        if not row:
+
+            await query.answer(
+                "❌ الطلب غير موجود.",
+                show_alert=True,
+            )
+
+            return
+
+        game_name = row["game_name"]
+
+        await query.answer(
+            "✅ تمت إضافة اللعبة!",
+            show_alert=False,
+        )
+
+        await query.edit_message_text(
+            f"🎮 *{game_name}*\n\n"
+            "🟢 تمت الإضافة",
+            parse_mode="Markdown",
+        )
+
+    except Exception as error:
+
+        print(
+            f"❌ Approve request error: {error}",
+            flush=True,
+        )
+
+        await query.answer(
+            "❌ حدث خطأ أثناء تحديث الطلب.",
+            show_alert=True,
+        )
     
     
 # =========================================================
