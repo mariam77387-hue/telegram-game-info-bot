@@ -1736,8 +1736,7 @@ async def requests_command(
                         game_name,
                         username,
                         user_id,
-                        status,
-                        requested_at
+                        status
                     FROM game_requests
                     ORDER BY requested_at DESC
                 """)
@@ -1770,28 +1769,19 @@ async def requests_command(
         "",
     ]
 
-    total = len(rows)
+    keyboard = []
 
-    for index, item in enumerate(
-        rows,
-        start=1,
-    ):
+    for index, item in enumerate(rows, start=1):
 
+        request_id = item["id"]
         game_name = item["game_name"]
         username = item["username"]
         status = item["status"]
 
         if username:
-
-            display_name = (
-                f"@{username}"
-            )
-
+            display_name = f"@{username}"
         else:
-
-            display_name = (
-                f"ID: {item['user_id']}"
-            )
+            display_name = f"ID: {item['user_id']}"
 
         if status == "approved":
 
@@ -1808,12 +1798,25 @@ async def requests_command(
             "",
         ])
 
+        # زر تغيير الحالة
+        if status != "approved":
+
+            keyboard.append([
+                InlineKeyboardButton(
+                    f"✅ تمت إضافة {game_name}"[:60],
+                    callback_data=f"approve_request:{request_id}",
+                )
+            ])
+
     lines.append(
-        f"📊 إجمالي الطلبات: {total}"
+        f"📊 إجمالي الطلبات: {len(rows)}"
     )
 
     await update.message.reply_text(
-        "\n".join(lines)[:4000]
+        "\n".join(lines)[:4000],
+        reply_markup=InlineKeyboardMarkup(keyboard)
+        if keyboard
+        else None,
     )
     
     
