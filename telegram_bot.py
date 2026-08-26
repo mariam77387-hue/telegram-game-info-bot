@@ -1394,6 +1394,7 @@ async def red_dead_menu(
 # PostgreSQL
 # =========================================================
 
+
 def get_db_connection():
 
     if not DATABASE_URL:
@@ -1433,8 +1434,16 @@ def init_database():
                     user_id BIGINT,
                     username TEXT,
                     language TEXT NOT NULL DEFAULT 'ar',
-                    requested_at TIMESTAMPTZ NOT NULL
+                    requested_at TIMESTAMPTZ NOT NULL,
+                    status TEXT NOT NULL DEFAULT 'pending'
                 )
+            """)
+
+            # إضافة الحالة للجدول القديم إذا كان موجودًا
+            cur.execute("""
+                ALTER TABLE game_requests
+                ADD COLUMN IF NOT EXISTS status
+                TEXT NOT NULL DEFAULT 'pending'
             """)
 
         conn.commit()
