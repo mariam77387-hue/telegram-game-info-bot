@@ -1731,15 +1731,16 @@ async def requests_command(
             with conn.cursor() as cur:
 
                 cur.execute("""
-                    SELECT
-                        id,
-                        game_name,
-                        username,
-                        user_id,
-                        status
-                    FROM game_requests
-                    ORDER BY requested_at DESC
-                """)
+    SELECT
+        id,
+        game_name,
+        username,
+        user_id,
+        status
+    FROM game_requests
+    WHERE status != 'approved'
+    ORDER BY requested_at DESC
+""")
 
                 rows = cur.fetchall()
 
