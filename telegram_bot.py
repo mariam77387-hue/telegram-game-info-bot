@@ -1826,11 +1826,18 @@ async def approve_request(
 
     query = update.callback_query
 
-    await query.answer()
+    print(
+        f"🔘 APPROVE BUTTON PRESSED: {query.data}",
+        flush=True,
+    )
 
     user = update.effective_user
 
     if not user:
+        await query.answer(
+            "❌ المستخدم غير موجود.",
+            show_alert=True,
+        )
         return
 
     if (
@@ -1842,7 +1849,6 @@ async def approve_request(
             "❌ غير مصرح لك.",
             show_alert=True,
         )
-
         return
 
     try:
@@ -1854,10 +1860,9 @@ async def approve_request(
     except (ValueError, IndexError):
 
         await query.answer(
-            "❌ طلب غير صالح.",
+            "❌ رقم الطلب غير صالح.",
             show_alert=True,
         )
-
         return
 
     try:
@@ -1870,7 +1875,7 @@ async def approve_request(
                     UPDATE game_requests
                     SET status = 'approved'
                     WHERE id = %s
-                    RETURNING game_name
+                    RETURNING id, game_name
                 """, (
                     request_id,
                 ))
@@ -1882,23 +1887,26 @@ async def approve_request(
         if not row:
 
             await query.answer(
-                "❌ الطلب غير موجود.",
+                "❌ الطلب غير موجود في قاعدة البيانات.",
                 show_alert=True,
             )
-
             return
 
         game_name = row["game_name"]
 
         await query.answer(
-            "✅ تمت إضافة اللعبة!",
-            show_alert=False,
+            "✅ تمت الإضافة!",
         )
 
         await query.edit_message_text(
             f"🎮 *{game_name}*\n\n"
             "🟢 تمت الإضافة",
             parse_mode="Markdown",
+        )
+
+        print(
+            f"✅ Request {request_id} approved: {game_name}",
+            flush=True,
         )
 
     except Exception as error:
