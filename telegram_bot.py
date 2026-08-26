@@ -2528,21 +2528,21 @@ def main():
         .build()
     )
 
-    app.add_handler(
+app.add_handler(
         CommandHandler(
             "start",
             start,
         )
     )
 
-    app.add_handler(
+app.add_handler(
         CommandHandler(
             "requests",
             requests_command,
         )
     )
 
-    app.add_handler(
+app.add_handler(
         CallbackQueryHandler(
             approve_request,
             pattern=r"^approve_request:\d+$",
