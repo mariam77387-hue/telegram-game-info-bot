@@ -18,21 +18,21 @@ MINECRAFT_IDEAS = [
         "name_en": "Simple Wooden House",
         "difficulty_ar": "🟢 سهل",
         "difficulty_en": "🟢 Easy",
-        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/images/IMG_7854.jpeg",
+        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/IMG_7854.JPG",
     },
     {
         "name_ar": "منزل حجري متوسط",
         "name_en": "Medium Stone House",
         "difficulty_ar": "🟡 متوسط",
         "difficulty_en": "🟡 Medium",
-        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/images/IMG_7857.jpeg",
+        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/IMG_7857.JPG",
     },
     {
         "name_ar": "قلعة كبيرة",
         "name_en": "Large Castle",
         "difficulty_ar": "🔴 صعب",
         "difficulty_en": "🔴 Hard",
-        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/images/IMG_7859.jpeg",
+        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/IMG_7859.JPG",
     },
     # أضف أي عدد تبغيه بنفس الشكل
 ]
@@ -80,7 +80,7 @@ def idea_markup(language):
 
 def download_image(url):
     """
-    يحمّل الصورة يدويًا باستخدام User-Agent متصفح
+    يحمّل الصورة يدويا باستخدام User-Agent متصفح
     عشان نتجاوز حماية بعض المواقع ضد الروابط المباشرة.
     """
 
