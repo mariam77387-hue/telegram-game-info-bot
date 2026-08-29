@@ -2,13 +2,14 @@
 #
 # مسؤول عن: زر "أفكار ماينكرافت" (صور + مستوى صعوبة)
 
+import io
 import random
+import requests
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 # =========================================================
-# عدّلي هذي القائمة: كل فكرة فيها اسم، صعوبة، ورابط صورة
-# رابط الصورة لازم يكون رابط مباشر لصورة (ينتهي بـ .jpg أو .png)
-# ارفعي صورك على imgur مثلاً وخذي الرابط المباشر (Direct link)
+# عدّل هذي القائمة: كل فكرة فيها اسم، صعوبة، ورابط صورة
 # =========================================================
 
 MINECRAFT_IDEAS = [
@@ -33,7 +34,7 @@ MINECRAFT_IDEAS = [
         "difficulty_en": "🔴 Hard",
         "image": "https://f.top4top.io/p_3893zsrmk0.jpeg",
     },
-    # أضيفي أي عدد تبغينه بنفس الشكل
+    # أضيفي/أضف أي عدد تبغيه بنفس الشكل
 ]
 
 
@@ -77,6 +78,26 @@ def idea_markup(language):
     ])
 
 
+def download_image(url):
+    """
+    يحمّل الصورة يدويًا باستخدام User-Agent متصفح
+    عشان نتجاوز حماية بعض المواقع ضد الروابط المباشرة.
+    """
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        )
+    }
+
+    response = requests.get(url, headers=headers, timeout=15)
+    response.raise_for_status()
+
+    return io.BytesIO(response.content)
+
+
 async def minecraft_ideas(update, context):
     query = update.callback_query
     await query.answer()
@@ -85,9 +106,12 @@ async def minecraft_ideas(update, context):
     idea = choose_random_idea(context)
 
     try:
+        photo_file = download_image(idea["image"])
+        photo_file.name = "idea.jpg"
+
         await context.bot.send_photo(
             chat_id=query.message.chat_id,
-            photo=idea["image"],
+            photo=photo_file,
             caption=idea_caption(idea, language),
             parse_mode="Markdown",
             reply_markup=idea_markup(language),
@@ -100,7 +124,7 @@ async def minecraft_ideas(update, context):
         await context.bot.send_message(
             chat_id=query.message.chat_id,
             text=(
-                "⚠️ صار خطأ بجلب الصورة، جربي مرة ثانية."
+                "⚠️ صار خطأ بجلب الصورة، جرب مرة ثانية."
                 if language == "ar"
                 else "⚠️ Failed to load the image, please try again."
             ),
