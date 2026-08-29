@@ -31,7 +31,7 @@ MINECRAFT_IDEAS = [
         "name_en": "Large Castle",
         "difficulty_ar": "🔴 صعب",
         "difficulty_en": "🔴 Hard",
-        "image": "ضعي_رابط_الصورة_هنا_3.jpg",
+        "image": "https://f.top4top.io/p_3893zsrmk0.jpeg",
     },
     # أضيفي أي عدد تبغينه بنفس الشكل
 ]
