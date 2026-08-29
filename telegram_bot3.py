@@ -11,13 +11,20 @@
 # 🔎 بحث عن لعبة
 # 🧠 تحدي الألعاب
 # ➕ طلب لعبة
+# 🧱 أفكار ماينكرافت
 #
 # ملاحظة:
 # telegram_bot.py هو الملف الرئيسي والمسؤول عن تنفيذ
-# الـ callbacks ومعلومات الألعاب وقاعدة البيانات.
+# باقي الـ callbacks ومعلومات الألعاب وقاعدة البيانات.
 # =========================================================
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import CallbackQueryHandler
+
+from telegram_bot4 import (
+    minecraft_ideas,
+    minecraft_back,
+)
 
 
 # =========================================================
@@ -110,6 +117,19 @@ def new_main_menu(language="ar"):
         InlineKeyboardButton(
             "🤠 Red Dead",
             callback_data="red_dead",
+        )
+    ])
+
+    # -----------------------------------------------------
+    # أفكار ماينكرافت
+    # -----------------------------------------------------
+
+    keyboard.append([
+        InlineKeyboardButton(
+            "🧱 أفكار ماينكرافت"
+            if language == "ar"
+            else "🧱 Minecraft Ideas",
+            callback_data="minecraft_ideas",
         )
     ])
 
@@ -213,14 +233,23 @@ def get_game_count():
 
 def register_bot3_handlers(app):
     """
-    Bot 3 لا يسجل CallbackQueryHandlers بنفسه.
-
-    telegram_bot.py هو الملف الرئيسي والمسؤول عن
-    التعامل مع callbacks.
-
-    نترك الدالة موجودة حتى يستطيع telegram_bot.py
-    استدعاءها بدون حدوث خطأ.
+    يسجل هنا فقط أزرار أفكار ماينكرافت.
+    باقي الـ callbacks يسجلها telegram_bot.py.
     """
+
+    app.add_handler(
+        CallbackQueryHandler(
+            minecraft_ideas,
+            pattern=r"^minecraft_ideas$",
+        )
+    )
+
+    app.add_handler(
+        CallbackQueryHandler(
+            minecraft_back,
+            pattern=r"^minecraft_back$",
+        )
+    )
 
     return None
 
@@ -261,6 +290,10 @@ def test_bot3():
 
     print(
         "➕ طلب لعبة: جاهز"
+    )
+
+    print(
+        "🧱 أفكار ماينكرافت: جاهز"
     )
 
     print(
