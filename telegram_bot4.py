@@ -84,13 +84,28 @@ async def minecraft_ideas(update, context):
     language = get_language(context)
     idea = choose_random_idea(context)
 
-    await context.bot.send_photo(
-        chat_id=query.message.chat_id,
-        photo=idea["image"],
-        caption=idea_caption(idea, language),
-        parse_mode="Markdown",
-        reply_markup=idea_markup(language),
-    )
+    try:
+        await context.bot.send_photo(
+            chat_id=query.message.chat_id,
+            photo=idea["image"],
+            caption=idea_caption(idea, language),
+            parse_mode="Markdown",
+            reply_markup=idea_markup(language),
+        )
+    except Exception as error:
+        print(
+            f"❌ Minecraft idea photo error: {error} | image: {idea['image']}",
+            flush=True,
+        )
+        await context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text=(
+                "⚠️ صار خطأ بجلب الصورة، جربي مرة ثانية."
+                if language == "ar"
+                else "⚠️ Failed to load the image, please try again."
+            ),
+            reply_markup=idea_markup(language),
+        )
 
 
 async def minecraft_back(update, context):
