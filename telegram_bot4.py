@@ -17,7 +17,7 @@ MINECRAFT_IDEAS = [
         "name_en": "Simple Wooden House",
         "difficulty_ar": "🟢 سهل",
         "difficulty_en": "🟢 Easy",
-        "image": "ضعي_رابط_الصورة_هنا_1.jpg",
+        "image": "https://j.top4top.io/p_3893k4yg40.jpeg",
     },
     {
         "name_ar": "منزل حجري متوسط",
