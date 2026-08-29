@@ -18,21 +18,21 @@ MINECRAFT_IDEAS = [
         "name_en": "Simple Wooden House",
         "difficulty_ar": "🟢 سهل",
         "difficulty_en": "🟢 Easy",
-        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/images/idea1.jpg",
+        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/images/IMG_7854.jpeg",
     },
     {
         "name_ar": "منزل حجري متوسط",
         "name_en": "Medium Stone House",
         "difficulty_ar": "🟡 متوسط",
         "difficulty_en": "🟡 Medium",
-        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/images/idea2.jpg",
+        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/images/IMG_7857.jpeg",
     },
     {
         "name_ar": "قلعة كبيرة",
         "name_en": "Large Castle",
         "difficulty_ar": "🔴 صعب",
         "difficulty_en": "🔴 Hard",
-        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/images/idea3.jpg",
+        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/images/IMG_7859.jpeg",
     },
     # أضف أي عدد تبغيه بنفس الشكل
 ]
