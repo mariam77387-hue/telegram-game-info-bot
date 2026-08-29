@@ -24,7 +24,7 @@ MINECRAFT_IDEAS = [
         "name_en": "Medium Stone House",
         "difficulty_ar": "🟡 متوسط",
         "difficulty_en": "🟡 Medium",
-        "image": "ضعي_رابط_الصورة_هنا_2.jpg",
+        "image": "https://c.top4top.io/p_3893uefjv0.jpeg",
     },
     {
         "name_ar": "قلعة كبيرة",
