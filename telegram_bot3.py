@@ -22,7 +22,8 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackQueryHandler
 
 from telegram_bot4 import (
-    minecraft_ideas,
+    minecraft_menu,
+    minecraft_idea_show,
     minecraft_back,
 )
 
@@ -129,7 +130,7 @@ def new_main_menu(language="ar"):
             "🧱 أفكار ماينكرافت"
             if language == "ar"
             else "🧱 Minecraft Ideas",
-            callback_data="minecraft_ideas",
+            callback_data="minecraft_menu",
         )
     ])
 
@@ -239,8 +240,15 @@ def register_bot3_handlers(app):
 
     app.add_handler(
         CallbackQueryHandler(
-            minecraft_ideas,
-            pattern=r"^minecraft_ideas$",
+            minecraft_menu,
+            pattern=r"^minecraft_menu$",
+        )
+    )
+
+    app.add_handler(
+        CallbackQueryHandler(
+            minecraft_idea_show,
+            pattern=r"^minecraft_idea:[a-zA-Z0-9_]+$",
         )
     )
 
