@@ -44,12 +44,20 @@ MINECRAFT_IDEAS = [
         "difficulty_en": "🔴 Hard",
         "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/IMG_7859.JPG",
     },
+    {
+        "id": "farm",
+        "name_ar": "🚜 مزرعة ريفية جميلة",
+        "name_en": "🚜 Beautiful Country Farm",
+        "difficulty_ar": "🟡 متوسط",
+        "difficulty_en": "🟡 Medium",
+        "image": "https://raw.githubusercontent.com/mariam77387-hue/telegram-game-info-bot/main/E0AF1719-87E8-4E52-B826-34104EED353A.PNG",
+    },
 
     # ضيفي كتل جديدة هنا 👇
     # {
-    #     "id": "farm_house",
-    #     "name_ar": "🚜 مزرعة ريفية جميلة",
-    #     "name_en": "🚜 Beautiful Country Farm",
+    #     "id": "new_idea",
+    #     "name_ar": "اسم الفكرة",
+    #     "name_en": "Idea Name",
     #     "difficulty_ar": "🟡 متوسط",
     #     "difficulty_en": "🟡 Medium",
     #     "image": "رابط الصورة هنا",
@@ -163,7 +171,7 @@ def idea_detail_markup(language):
 
 def download_image(url):
     """
-    يحمّل الصورة يدويًا باستخدام User-Agent متصفح
+    يحمّل الصورة يدويا باستخدام User-Agent متصفح
     عشان نتجاوز حماية بعض المواقع ضد الروابط المباشرة.
     """
 
@@ -215,7 +223,7 @@ async def minecraft_idea_show(update, context):
         await context.bot.send_message(
             chat_id=query.message.chat_id,
             text=(
-                "⚠️ صار خطأ بجلب الصورة، جرب مرة ثانية."
+                "⚠ صار خطأ بجلب الصورة، جرب مرة ثانية."
                 if language == "ar"
                 else "⚠️ Failed to load the image, please try again."
             ),
